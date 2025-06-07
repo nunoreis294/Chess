@@ -13,10 +13,173 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\images">
+      <UniqueIdentifier>{61044002-3bfa-4a2f-98e1-cb0b2b1afdaf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="piece.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="board.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\images\1-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\2-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\3-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\4-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\5-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\6-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\7-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\8-digit.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\a-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\bishop-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\bishop-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\b-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\board.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\checked.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\c-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\d-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\dot.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\e-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\f-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\g-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\h-letter.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\king-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\king-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\knight-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\knight-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\pawn-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\pawn-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\queen-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\queen-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\rook-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\rook-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-black.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-black-corner.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-black-side.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-brown-corner.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-brown-side.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-white.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-white-corner.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\square-white-side.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="..\images\threatened.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="board.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="piece.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
