@@ -2,7 +2,7 @@
 
 2D
 
-'enum Piece { EMPTY, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+`enum Piece { EMPTY, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
 enum Color { NONE, WHITE, BLACK };
 
 struct Square {
@@ -10,7 +10,7 @@ struct Square {
     Color color;
 };
 
-Square board[8][8];'
+Square board[8][8];`
 
 
 Bitboard
