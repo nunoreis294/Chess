@@ -431,6 +431,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Aseprite Sprite
+*.aseprite
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 

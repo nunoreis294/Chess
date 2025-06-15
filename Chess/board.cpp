@@ -12,13 +12,13 @@ void Board::reset()
 	// Clear all squares
 	for (int y = 0; y < 8; y++)
 		for (int x = 0; x < 8; x++)
-			board[y][x] = { PieceType::None, Color::None };
+			board[y][x] = { PieceType::None, PieceColor::None };
 
 	// Place pawns
 	for (int x = 0; x < 8; x++)
 	{
-		board[1][x] = { PieceType::Pawn, Color::White };
-		board[6][x] = { PieceType::Pawn, Color::Black };
+		board[6][x] = { PieceType::Pawn, PieceColor::White };
+		board[1][x] = { PieceType::Pawn, PieceColor::Black };
 	}
 
 	// Place other pieces
@@ -28,14 +28,14 @@ void Board::reset()
 
 	for (int x = 0; x < 8; x++)
 	{
-		board[0][x] = { backRow[x], Color::White};
-		board[7][x] = { backRow[x], Color::Black };
+		board[7][x] = { backRow[x], PieceColor::White};
+		board[0][x] = { backRow[x], PieceColor::Black };
 	}
 }
 
 bool Board::move(int fromX, int fromY, int toX, int toY)
 {
-
+	return true;
 }
 
 Piece Board::getPiece(int x, int y) const
