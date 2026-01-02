@@ -107,13 +107,6 @@ void Gui::run()
 // Draw the chessboard squares
 void Gui::drawBoard()
 {
-    sf::Font font;
-    if (!font.openFromFile("text.ttf"))
-    {
-        // error...
-    }
-    //sf::Text pieceText(font, "", 15);
-
     const float tileSize = window.getSize().y / 10;
 
     for (int y = 0; y < 10; ++y)
@@ -124,23 +117,16 @@ void Gui::drawBoard()
 
 			sf::Vector2f position(x * tileSize, y * tileSize);
 
-            //pieceText.setFillColor(sf::Color::Black);
-            //pieceText.setPosition(position);
-
             if (y == 0 || y == 9 || x == 0 || x == 9)
             {
                 if (y == x || (x == 0 && y == 9) || (x == 9 && y == 0))
                 {
-                    //pieceText.setString("c " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["brown-corner"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["brown-corner"].getSize().x), (tileSize / squareTextures["brown-corner"].getSize().y)));
                 }
                 else
                 {
-                    //pieceText.setString("s " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["brown-side"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["brown-side"].getSize().x), (tileSize / squareTextures["brown-side"].getSize().y)));
@@ -156,8 +142,6 @@ void Gui::drawBoard()
             {
                 if ((x == 1 && y == 1) || (x == 8 && y == 8))
                 {
-                    //pieceText.setString("c " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["white-corner"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["white-corner"].getSize().x), (tileSize / squareTextures["white-corner"].getSize().y)));
@@ -170,8 +154,6 @@ void Gui::drawBoard()
                 }
                 else if (y == 1 || y == 8 || x == 1 || x == 8)
                 {
-                    //pieceText.setString("s " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["white-side"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["white-side"].getSize().x), (tileSize / squareTextures["white-side"].getSize().y)));
@@ -194,8 +176,6 @@ void Gui::drawBoard()
                 }
                 else
                 {
-                    //pieceText.setString("" + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["white"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["white"].getSize().x), (tileSize / squareTextures["white"].getSize().y)));
@@ -205,8 +185,6 @@ void Gui::drawBoard()
             {
                 if ((x == 1 && y == 8) || (x == 8 && y == 1))
                 {
-                    //pieceText.setString("c " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["black-corner"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["black-corner"].getSize().x), (tileSize / squareTextures["black-corner"].getSize().y)));
@@ -224,8 +202,6 @@ void Gui::drawBoard()
                 }
                 else if (y == 1 || y == 8 || x == 1 || x == 8)
                 {
-                    //pieceText.setString("s " + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["black-side"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["black-side"].getSize().x), (tileSize / squareTextures["black-side"].getSize().y)));
@@ -248,8 +224,6 @@ void Gui::drawBoard()
                 }
                 else
                 {
-                    //pieceText.setString("" + std::to_string(x) + " " + std::to_string(y));
-
                     boardSprite.setTexture(squareTextures["black"]);
                     boardSprite.setPosition(position);
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["black"].getSize().x), (tileSize / squareTextures["black"].getSize().y)));
@@ -257,17 +231,14 @@ void Gui::drawBoard()
             }
 
             window.draw(boardSprite);
-
-            //window.draw(pieceText);
         }
     }
 
-    // Replace the problematic line with the following:
     bool playerWhiteColor = ("White" == game.getCurrentPlayerColor()) ? true : false;
 
-    for (int y = 0; y < 10; ++y)
+    for (int y = 0; y < 10 ; ++y)
     {
-        for (int x = 0; x < 10; ++x)
+        for (int x = 0; x < 10 ; ++x)
         {
             const std::string letters[] = { "a", "b", "c", "d", "e", "f", "g", "h" };
             const std::string digits[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -276,19 +247,23 @@ void Gui::drawBoard()
 
             sf::Vector2f position(x * tileSize, y * tileSize);
 
-            if ((playerWhiteColor && ((x == 0 (y != 0 && y != 9)) || (y == 9 && (x != 0 && x != 9)))) || (!playerWhiteColor && ((y == 0 && (x != 0 && x != 9)) || (x == 9 && (x != 0 && x != 9)))))
+            if ((x == 0 && (y != 0 && y != 9)) || (y == 9 && (x != 0 && x != 9)))
             {
-                if ((playerWhiteColor && y == 9 && (x != 0 && x != 9)) || (!playerWhiteColor && y == 0 && (x != 0 && x != 9)))
+                letterDigitSprite.setPosition(position);
+
+                if (y == 9 && (x != 0 && x != 9))
                 {
-					std::string letter = letters[(x - 1)];
+                    int index = playerWhiteColor ? x - 1 : 8 - x;
+                    std::string letter = letters[index];
 
                     letterDigitSprite.setTexture(letterTextures[letter]);
                     letterDigitSprite.setPosition(position);
                     letterDigitSprite.setScale(sf::Vector2f((tileSize / letterTextures[letter].getSize().x), (tileSize / letterTextures[letter].getSize().y)));
                 }
-                else if ((playerWhiteColor && x == 0 && (y != 0 && y != 9)) || (!playerWhiteColor && x == 9 && (x != 0 && x != 9)))
+                else if (x == 0 && (y != 0 && y != 9))
                 {
-                    std::string digit = digits[(8 - y)];
+                    int index = playerWhiteColor ? 8 - y : y - 1;
+                    std::string digit = digits[index];
 
                     letterDigitSprite.setTexture(digitTextures[digit]);
                     letterDigitSprite.setPosition(position);
@@ -304,53 +279,35 @@ void Gui::drawBoard()
 // Draw the chess pieces (placeholder: you would use textures/sprites in a real app)
 void Gui::drawPieces()
 {
-    // Example: draw simple circles for pieces
-    // In a real app, load and draw piece images
     const Board& board = game.getBoard();
     const float tileSize = window.getSize().y / 10;
 
-    sf::Font font;
-    if (!font.openFromFile("text.ttf"))
-    {
-        // error...
-    }
+    bool playerWhiteColor = ("White" == game.getCurrentPlayerColor()) ? true : false;
 
     for (int y = 0; y < 8; ++y)
     {
         for (int x = 0; x < 8; ++x)
         {
+            sf::Sprite pieceSprite{ pieceTextures["pawn-white"] };
             Piece p = board.getPiece(x, y);
+
+			int drawX = playerWhiteColor ? 1 + x : 8 - x;
+			int drawY = playerWhiteColor ? 1 + y : 8 - y;
 
             if (p.type != PieceType::None)
             {
-				sf::Text pieceText(font ,"", 24);
-                sf::CircleShape pieceShape(tileSize / 2 - 10);
+                std::string pieceName = p.type == PieceType::Pawn ? "pawn" :
+                    p.type == PieceType::Rook ? "rook" :
+                    p.type == PieceType::Knight ? "knight" :
+                    p.type == PieceType::Bishop ? "bishop" :
+					p.type == PieceType::Queen ? "queen" : "king";
+				std::string pieceColor = p.color == PieceColor::White ? "white" : "black";
 
-                char c = ' ';
+                pieceSprite.setTexture(pieceTextures[pieceName + '-' + pieceColor]);
+                pieceSprite.setPosition(sf::Vector2f(drawX * tileSize, drawY * tileSize));
+                pieceSprite.setScale(sf::Vector2f((tileSize / pieceTextures[pieceName + '-' + pieceColor].getSize().x), (tileSize / pieceTextures[pieceName + '-' + pieceColor].getSize().y)));
 
-                if (p.type != PieceType::None)
-                {
-                    c = p.type == PieceType::Pawn ? 'P' :
-                        p.type == PieceType::Rook ? 'R' :
-                        p.type == PieceType::Knight ? 'N' :
-                        p.type == PieceType::Bishop ? 'B' :
-                        p.type == PieceType::Queen ? 'Q' : 'K';
-
-                    if (p.color == PieceColor::Black)
-                    {
-                        c = std::tolower(c);
-                    }
-                }
-
-                pieceText.setString(c);
-				pieceText.setFillColor(p.color == PieceColor::White ? sf::Color::Black : sf::Color::White);
-				pieceText.setPosition(sf::Vector2f((1 + x) * tileSize + 10, (1 + y) * tileSize + 10));
-
-                pieceShape.setPosition(sf::Vector2f((1 + x) * tileSize + 10, (1 + y) * tileSize + 10));
-                pieceShape.setFillColor(p.color == PieceColor::White ? sf::Color::White : sf::Color::Black);
-
-                window.draw(pieceShape);
-                window.draw(pieceText);
+                window.draw(pieceSprite);
             }
         }
     }

@@ -16,5 +16,5 @@ public:
 
 private:
     Board board;
-    PlayerColor currentTurn;
+    PlayerColor currentPlayerColor;
 };

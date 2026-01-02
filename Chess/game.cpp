@@ -10,7 +10,7 @@ Game::Game()
 void Game::newGame()
 {
 	board.reset();
-	currentTurn = PlayerColor::White;
+	currentPlayerColor = PlayerColor::Black;
 }
 
 bool Game::makeMove(int fromX, int fromY, int toX, int toY)
@@ -25,7 +25,7 @@ Board Game::getBoard()
 
 std::string Game::getCurrentPlayerColor()
 {
-	if (currentTurn == PlayerColor::White)
+	if (currentPlayerColor == PlayerColor::White)
 		return "White";
 	else
 		return "Black";
