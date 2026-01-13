@@ -12,7 +12,6 @@ public:
     bool makeMove(int fromX, int fromY, int toX, int toY);
 	Board getBoard();
     std::string getCurrentPlayerColor();
-    // Add more as needed
 
 private:
     Board board;

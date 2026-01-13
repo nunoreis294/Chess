@@ -80,7 +80,7 @@
     <Image Include="..\images\board.png">
       <Filter>Resource Files\images</Filter>
     </Image>
-    <Image Include="..\images\checked.png">
+    <Image Include="..\images\check.png">
       <Filter>Resource Files\images</Filter>
     </Image>
     <Image Include="..\images\c-letter.png">
@@ -158,7 +158,7 @@
     <Image Include="..\images\square-white-side.png">
       <Filter>Resource Files\images</Filter>
     </Image>
-    <Image Include="..\images\threatened.png">
+    <Image Include="..\images\attacked.png">
       <Filter>Resource Files\images</Filter>
     </Image>
   </ItemGroup>

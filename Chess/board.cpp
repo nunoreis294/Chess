@@ -1,12 +1,12 @@
 #include "board.h"
 
-// Constructor: initialize the window and any resources
+// Constructor
 Board::Board()
 {
 	reset();
 }
 
-// Set up the initial chess position
+// Reset the board to the initial chess position
 void Board::reset()
 {
 	// Clear all squares
@@ -33,12 +33,36 @@ void Board::reset()
 	}
 }
 
+// Move a piece from (fromX, fromY) to (toX, toY)
 bool Board::move(int fromX, int fromY, int toX, int toY)
 {
 	return true;
 }
 
+// Get the piece at position (x, y)
 Piece Board::getPiece(int x, int y) const
 {
 	return board[y][x];
+}
+
+// Check if the king of the given color is in check
+bool Board::isKingChecked(PieceColor pieceColor) const
+{
+	return false;
+}
+
+// Get possible squares for the selected piece
+std::vector<sf::Vector2f> Board::getPossibleSquares(sf::Vector2f selectedSquare) const
+{
+	std::vector<sf::Vector2f> possibleSquares;
+
+	return possibleSquares;
+}
+
+// Get attacked squares for the selected piece
+std::vector<sf::Vector2f> Board::getAttackedSquares(sf::Vector2f selectedSquare) const
+{
+	std::vector<sf::Vector2f> attackedSquares;
+
+	return attackedSquares;
 }
