@@ -115,6 +115,22 @@ void Gui::run()
 			// Close window : exit
             if (event->is<sf::Event::Closed>())
                 window.close();
+
+			if (event->is<sf::Event::MouseButtonPressed>())
+            {
+				// Get mouse position
+				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+				// Calculate selected square based on mouse position
+				const float tileSize = window.getSize().y / 10;
+				int x = mousePos.x / tileSize;
+				int y = mousePos.y / tileSize;
+
+				selectedSquare = sf::Vector2f(static_cast<float>(x), static_cast<float>(y));
+
+                // For testing: print selected square
+                std::cout << "Selected square: (" << selectedSquare.x << ", " << selectedSquare.y << ")\n";
+            }                        
         }
 
 		// Clear the window
@@ -316,7 +332,6 @@ void Gui::drawBoard()
 
 	// Draw possible squares (dot) and attacked squares (red boarder) based on selected piece
     std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedSquare) };
-    std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedSquare) };
 
     sf::Sprite utilSprite{ utilTextures["dot"] };
 
@@ -326,6 +341,8 @@ void Gui::drawBoard()
         utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["dot"].getSize().x), (tileSize / utilTextures["dot"].getSize().y)));
         window.draw(utilSprite);
     }
+
+    std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedSquare) };
 
 	utilSprite = sf::Sprite{ utilTextures["attacked"] };
 
