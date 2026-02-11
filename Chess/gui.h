@@ -20,6 +20,7 @@ private:
     std::map<std::string, sf::Texture> utilTextures;
 
 	sf::Vector2f selectedSquare;
+    sf::Vector2f selectedPiece;
 
     void drawBoard();
     void drawPieces();

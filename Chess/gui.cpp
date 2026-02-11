@@ -5,6 +5,9 @@
 Gui::Gui(Game& game)
     : game(game), window(sf::VideoMode({ 900, 600 }), "Chess")
 {
+	selectedSquare = sf::Vector2f(-1.f, -1.f);
+	selectedPiece = sf::Vector2f(-1.f, -1.f);
+
 	// Load board square textures
     const std::string squareColors[] = { "white", "black", "brown" };
     const std::string squareTypes[] = { "", "-side", "-corner"};
@@ -126,11 +129,42 @@ void Gui::run()
 				int x = mousePos.x / tileSize;
 				int y = mousePos.y / tileSize;
 
-				selectedSquare = sf::Vector2f(static_cast<float>(x), static_cast<float>(y));
+                if (x > 0 && x <= 8 && y > 0 && y <= 8)
+                {
+                    selectedSquare = sf::Vector2f(static_cast<float>(x), static_cast<float>(y));
 
-                // For testing: print selected square
-                std::cout << "Selected square: (" << selectedSquare.x << ", " << selectedSquare.y << ")\n";
-            }                        
+                    Piece piece = board.getPiece(x - 1, y - 1);
+                    std::string currentPlayerColor = game.getCurrentPlayerColor();
+
+					//Can select piece if there is no piece currently selected or if selecting own piece
+                    if ((currentPlayerColor == "White" && piece.color == PieceColor::White) ||
+                        (currentPlayerColor == "Black" && piece.color == PieceColor::Black))
+                    {
+                        selectedPiece = selectedSquare;
+                    }
+					else if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
+                    {
+                        std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedPiece) };
+
+                        std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedPiece) };
+
+						possibleSquares.insert(possibleSquares.end(), attackedSquares.begin(), attackedSquares.end());
+
+                        for (sf::Vector2f possibleSquare : possibleSquares)
+                        {
+                            if (possibleSquare.x == selectedSquare.x && possibleSquare.y == selectedSquare.y)
+                            {
+                                std::cout << "Move\n";
+                                break;
+							}
+                        }
+
+                        selectedPiece = sf::Vector2f(-1.f, -1.f);
+					}
+                }
+                else
+                    selectedPiece = sf::Vector2f(-1.f, -1.f);
+            }
         }
 
 		// Clear the window
@@ -331,7 +365,7 @@ void Gui::drawBoard()
     }
 
 	// Draw possible squares (dot) and attacked squares (red boarder) based on selected piece
-    std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedSquare) };
+    std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedPiece) };
 
     sf::Sprite utilSprite{ utilTextures["dot"] };
 
@@ -342,7 +376,7 @@ void Gui::drawBoard()
         window.draw(utilSprite);
     }
 
-    std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedSquare) };
+    std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedPiece) };
 
 	utilSprite = sf::Sprite{ utilTextures["attacked"] };
 
