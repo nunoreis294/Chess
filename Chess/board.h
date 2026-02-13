@@ -9,8 +9,8 @@ public:
     bool move(int fromX, int fromY, int toX, int toY);
     Piece getPiece(int x, int y) const;
     bool isKingChecked(PieceColor pieceColor) const;
-    std::vector<sf::Vector2f> getPossibleSquares(sf::Vector2f selectedSquare) const;
-    std::vector<sf::Vector2f> getAttackedSquares(sf::Vector2f selectedSquare) const;
+    std::vector<sf::Vector2i> getPossibleSquares(sf::Vector2i selectedSquare) const;
+    std::vector<sf::Vector2i> getAttackedSquares(sf::Vector2i selectedSquare) const;
 
 private:
     Piece board[8][8];

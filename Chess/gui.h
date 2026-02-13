@@ -19,8 +19,8 @@ private:
     std::map<std::string, sf::Texture> pieceTextures;
     std::map<std::string, sf::Texture> utilTextures;
 
-	sf::Vector2f selectedSquare;
-    sf::Vector2f selectedPiece;
+	sf::Vector2i selectedSquare;
+    sf::Vector2i selectedPiece;
 
     void drawBoard();
     void drawPieces();

@@ -36,6 +36,12 @@ void Board::reset()
 // Move a piece from (fromX, fromY) to (toX, toY)
 bool Board::move(int fromX, int fromY, int toX, int toY)
 {
+	PieceType pieceType = board[fromY][fromX].type;
+	PieceColor pieceColor = board[fromY][fromX].color;
+
+	board[toY][toX] = { pieceType, pieceColor };
+	board[fromY][fromX] = { PieceType::None, PieceColor::None };
+
 	return true;
 }
 
@@ -52,9 +58,9 @@ bool Board::isKingChecked(PieceColor pieceColor) const
 }
 
 // Get possible squares for the selected piece
-std::vector<sf::Vector2f> Board::getPossibleSquares(sf::Vector2f selectedPiece) const
+std::vector<sf::Vector2i> Board::getPossibleSquares(sf::Vector2i selectedPiece) const
 {
-	std::vector<sf::Vector2f> possibleSquares;
+	std::vector<sf::Vector2i> possibleSquares;
 
 	Piece piece = getPiece((int)selectedPiece.x - 1, (int)selectedPiece.y - 1);
 
@@ -63,7 +69,7 @@ std::vector<sf::Vector2f> Board::getPossibleSquares(sf::Vector2f selectedPiece) 
 		if (piece.type == PieceType::Pawn)
 		{
 			int direction = piece.color == PieceColor::White ? -1 : 1;
-			sf::Vector2f forwardSquare = sf::Vector2f(selectedPiece.x, selectedPiece.y + direction);
+			sf::Vector2i forwardSquare = sf::Vector2i(selectedPiece.x, selectedPiece.y + direction);
 
 			if (forwardSquare.y >= 1 && forwardSquare.y <= 8 && board[(int)forwardSquare.y - 1][(int)forwardSquare.x - 1].type == PieceType::None)
 			{
@@ -73,7 +79,7 @@ std::vector<sf::Vector2f> Board::getPossibleSquares(sf::Vector2f selectedPiece) 
 				if ((piece.color == PieceColor::White && selectedPiece.y == 7) ||
 					(piece.color == PieceColor::Black && selectedPiece.y == 2))
 				{
-					sf::Vector2f doubleForwardSquare = sf::Vector2f(selectedPiece.x, selectedPiece.y + 2 * direction);
+					sf::Vector2i doubleForwardSquare = sf::Vector2i(selectedPiece.x, selectedPiece.y + 2 * direction);
 
 					if (board[(int)doubleForwardSquare.y - 1][(int)doubleForwardSquare.x - 1].type == PieceType::None)
 					{
@@ -88,9 +94,9 @@ std::vector<sf::Vector2f> Board::getPossibleSquares(sf::Vector2f selectedPiece) 
 }
 
 // Get attacked squares for the selected piece
-std::vector<sf::Vector2f> Board::getAttackedSquares(sf::Vector2f selectedPiece) const
+std::vector<sf::Vector2i> Board::getAttackedSquares(sf::Vector2i selectedPiece) const
 {
-	std::vector<sf::Vector2f> attackedSquares;
+	std::vector<sf::Vector2i> attackedSquares;
 
 	Piece piece = getPiece((int)selectedPiece.x - 1, (int)selectedPiece.y - 1);
 
@@ -101,8 +107,8 @@ std::vector<sf::Vector2f> Board::getAttackedSquares(sf::Vector2f selectedPiece) 
 			int direction = piece.color == PieceColor::White ? -1 : 1;
 
 			// Check for captures
-			sf::Vector2f captureLeft = sf::Vector2f(selectedPiece.x - 1, selectedPiece.y + direction);
-			sf::Vector2f captureRight = sf::Vector2f(selectedPiece.x + 1, selectedPiece.y + direction);
+			sf::Vector2i captureLeft = sf::Vector2i(selectedPiece.x - 1, selectedPiece.y + direction);
+			sf::Vector2i captureRight = sf::Vector2i(selectedPiece.x + 1, selectedPiece.y + direction);
 
 			if (captureLeft.x >= 1 && captureLeft.x <= 8 && captureLeft.y >= 1 && captureLeft.y <= 8)
 			{

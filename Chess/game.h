@@ -10,8 +10,9 @@ public:
     Game();
     void newGame();
     bool makeMove(int fromX, int fromY, int toX, int toY);
-	Board getBoard();
+	Board* getBoard();
     std::string getCurrentPlayerColor();
+    void changePlayerColor();
 
 private:
     Board board;

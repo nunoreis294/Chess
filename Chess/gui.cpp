@@ -5,8 +5,8 @@
 Gui::Gui(Game& game)
     : game(game), window(sf::VideoMode({ 900, 600 }), "Chess")
 {
-	selectedSquare = sf::Vector2f(-1.f, -1.f);
-	selectedPiece = sf::Vector2f(-1.f, -1.f);
+	selectedSquare = sf::Vector2i(-1, -1);
+	selectedPiece = sf::Vector2i(-1, -1);
 
 	// Load board square textures
     const std::string squareColors[] = { "white", "black", "brown" };
@@ -107,7 +107,7 @@ Gui::Gui(Game& game)
 // Run the GUI main loop
 void Gui::run()
 {
-	const Board& board = game.getBoard();
+	const Board* board = game.getBoard();
 
 	// Main loop
     while (window.isOpen())
@@ -119,6 +119,7 @@ void Gui::run()
             if (event->is<sf::Event::Closed>())
                 window.close();
 
+			// Handle mouse click events for selecting pieces and squares
 			if (event->is<sf::Event::MouseButtonPressed>())
             {
 				// Get mouse position
@@ -131,40 +132,115 @@ void Gui::run()
 
                 if (x > 0 && x <= 8 && y > 0 && y <= 8)
                 {
-                    selectedSquare = sf::Vector2f(static_cast<float>(x), static_cast<float>(y));
-
-                    Piece piece = board.getPiece(x - 1, y - 1);
                     std::string currentPlayerColor = game.getCurrentPlayerColor();
 
-					//Can select piece if there is no piece currently selected or if selecting own piece
+                    if (currentPlayerColor == "Black")
+                    {
+                        x = 9 - x;
+                        y = 9 - y;
+                    }
+
+                    selectedSquare = sf::Vector2i(x, y);
+
+                    std::cout << "x: " << x << " - y: " << y << std::endl;
+
+                    Piece piece = board->getPiece(x - 1, y - 1);
+
+                    std::cout << "currentPlayerColor: " << currentPlayerColor << " - piece.color: " << (piece.color == PieceColor::White ? "White" : 
+                        piece.color == PieceColor::Black ? "Black" : "None") << std::endl;
+
+					// Can select piece if there is no piece currently selected or if selecting own piece
                     if ((currentPlayerColor == "White" && piece.color == PieceColor::White) ||
                         (currentPlayerColor == "Black" && piece.color == PieceColor::Black))
                     {
+                        std::cout << "select" << std::endl;
+
                         selectedPiece = selectedSquare;
                     }
 					else if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
                     {
-                        std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedPiece) };
+                        std::cout << "move" << std::endl;
 
-                        std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedPiece) };
+						// Check if the selected square is a valid move or attack for the selected piece
+                        std::vector<sf::Vector2i> possibleSquares = { board->getPossibleSquares(selectedPiece) };
+
+                        std::vector<sf::Vector2i> attackedSquares = { board->getAttackedSquares(selectedPiece) };
 
 						possibleSquares.insert(possibleSquares.end(), attackedSquares.begin(), attackedSquares.end());
 
-                        for (sf::Vector2f possibleSquare : possibleSquares)
+                        for (sf::Vector2i possibleSquare : possibleSquares)
                         {
                             if (possibleSquare.x == selectedSquare.x && possibleSquare.y == selectedSquare.y)
                             {
-                                std::cout << "Move\n";
+								// Make the move/capture
+								bool success = game.makeMove((int)selectedPiece.x, (int)selectedPiece.y, (int)selectedSquare.x, (int)selectedSquare.y);
+
+                                if (success)
+                                    game.changePlayerColor();
+
                                 break;
 							}
                         }
 
-                        selectedPiece = sf::Vector2f(-1.f, -1.f);
+                        selectedPiece = sf::Vector2i(-1.f, -1.f);
 					}
                 }
                 else
-                    selectedPiece = sf::Vector2f(-1.f, -1.f);
+                    selectedPiece = sf::Vector2i(-1.f, -1.f);
+
+                std::cout << std::endl;
             }
+
+			// Handle window resize events to maintain aspect ratio and scaling
+            /*if (event->is<sf::Event::Resized>())
+            {
+                sf::View view = window.getView();
+
+                sf::Vector2f newSize = view.getSize();
+
+                constexpr float targetAspectRatio = 16.f / 9.f; // testing on 1920x1080
+                constexpr float initialX = 1920.f, initialY = 1080.f;
+
+                float newAspectRatio = (float)newSize.x / (float)newSize.y;
+
+                view.setSize({ (float)newSize.x, (float)newSize.y });
+
+                float zoomX = initialX / (float)newSize.x;
+                float zoomY = initialY / (float)newSize.y;
+                float zoom = (newAspectRatio > targetAspectRatio) ? zoomY : zoomX;
+
+                view.zoom(zoom);
+
+                window.setView(view);
+
+                sf::View view = window.getView();
+
+                float windowRatio = (float)window.getSize().x / (float)window.getSize().y;
+                float viewRatio = view.getSize().x / (float)view.getSize().y;
+                float sizeX = 1;
+                float sizeY = 1;
+                float posX = 0;
+                float posY = 0;
+
+                bool horizontalSpacing = true;
+                if (windowRatio < viewRatio)
+                    horizontalSpacing = false;
+
+                // If horizontalSpacing is true, the black bars will appear on the left and right side.
+                // Otherwise, the black bars will appear on the top and bottom.
+
+                if (horizontalSpacing) {
+                    sizeX = viewRatio / windowRatio;
+                    posX = (1 - sizeX) / 2.f;
+                }
+
+                else {
+                    sizeY = windowRatio / viewRatio;
+                    posY = (1 - sizeY) / 2.f;
+                }
+
+                view.setViewport(sf::FloatRect(sf::Vector2f(posX, posY), sf::Vector2f(sizeX, sizeY)));
+            }*/
         }
 
 		// Clear the window
@@ -185,7 +261,7 @@ void Gui::run()
 // Draw the chess board (squares, letters, digits, possible moves and attacked squares)
 void Gui::drawBoard()
 {
-    const Board& board = game.getBoard();
+    const Board* board = game.getBoard();
 
 	// Use absolute size to ensure squares are always square
 	// 8 rows + 2 for borders
@@ -364,34 +440,44 @@ void Gui::drawBoard()
         }
     }
 
-	// Draw possible squares (dot) and attacked squares (red boarder) based on selected piece
-    std::vector<sf::Vector2f> possibleSquares = { board.getPossibleSquares(selectedPiece) };
-
-    sf::Sprite utilSprite{ utilTextures["dot"] };
-
-    for (sf::Vector2f possibleSquare : possibleSquares)
+    if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
     {
-        utilSprite.setPosition(sf::Vector2f(tileSize * possibleSquare.x , tileSize* possibleSquare.y));
-        utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["dot"].getSize().x), (tileSize / utilTextures["dot"].getSize().y)));
-        window.draw(utilSprite);
-    }
+        // Draw possible squares (dot) and attacked squares (red boarder) based on selected piece
+        std::vector<sf::Vector2i> possibleSquares = { board->getPossibleSquares(selectedPiece) };
 
-    std::vector<sf::Vector2f> attackedSquares = { board.getAttackedSquares(selectedPiece) };
+        sf::Sprite utilSprite{ utilTextures["dot"] };
 
-	utilSprite = sf::Sprite{ utilTextures["attacked"] };
+        for (sf::Vector2i possibleSquare : possibleSquares)
+        {
+            if (playerWhiteColor)
+                utilSprite.setPosition(sf::Vector2f(tileSize * possibleSquare.x, tileSize * possibleSquare.y));
+            else
+                utilSprite.setPosition(sf::Vector2f(tileSize * (9 - possibleSquare.x), tileSize * (9 - possibleSquare.y)));
 
-    for (sf::Vector2f attackedSquare : attackedSquares)
-    {
-        utilSprite.setPosition(sf::Vector2f(tileSize* attackedSquare.x, tileSize* attackedSquare.y));
-        utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["attacked"].getSize().x), (tileSize / utilTextures["attacked"].getSize().y)));
-        window.draw(utilSprite);
+            utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["dot"].getSize().x), (tileSize / utilTextures["dot"].getSize().y)));
+            window.draw(utilSprite);
+        }
+
+        std::vector<sf::Vector2i> attackedSquares = { board->getAttackedSquares(selectedPiece) };
+
+        utilSprite = sf::Sprite{ utilTextures["attacked"] };
+
+        for (sf::Vector2i attackedSquare : attackedSquares)
+        {
+            if (playerWhiteColor)
+                utilSprite.setPosition(sf::Vector2f(tileSize * attackedSquare.x, tileSize * attackedSquare.y));
+            else
+                utilSprite.setPosition(sf::Vector2f(tileSize * (9 - attackedSquare.x), tileSize * (9 - attackedSquare.y)));
+            utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["attacked"].getSize().x), (tileSize / utilTextures["attacked"].getSize().y)));
+            window.draw(utilSprite);
+        }
     }
 }
 
 // Draw the chess pieces on the board
 void Gui::drawPieces()
 {
-    const Board& board = game.getBoard();
+    const Board* board = game.getBoard();
 
 	// Use absolute size to ensure pieces are always square
     const float tileSize = window.getSize().y / 10;
@@ -404,7 +490,7 @@ void Gui::drawPieces()
         for (int x = 0; x < 8; ++x)
         {
             sf::Sprite pieceSprite{ pieceTextures["pawn-white"] };
-            Piece p = board.getPiece(x, y);
+            Piece p = board->getPiece(x, y);
 
 			// Adjust drawing position based on player color
 			int drawX = playerWhiteColor ? 1 + x : 8 - x;
@@ -421,7 +507,7 @@ void Gui::drawPieces()
 				std::string pieceColor = p.color == PieceColor::White ? "white" : "black";
 
 				// If king is in check, draw check indicator under the king piece
-                if (pieceName == "king" && board.isKingChecked(p.color))
+                if (pieceName == "king" && board->isKingChecked(p.color))
                 {
                     sf::Sprite utilSprite{ utilTextures["check"] };
 
