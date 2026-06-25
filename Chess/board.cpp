@@ -31,6 +31,8 @@ void Board::reset()
 		board[7][x] = { backRow[x], PieceColor::White};
 		board[0][x] = { backRow[x], PieceColor::Black };
 	}
+
+	board[2][2] = { PieceType::Pawn, PieceColor::White };
 }
 
 // Move a piece from (fromX, fromY) to (toX, toY)
@@ -133,4 +135,10 @@ std::vector<sf::Vector2i> Board::getAttackedSquares(sf::Vector2i selectedPiece) 
 	}
 
 	return attackedSquares;
+}
+
+void Board::setPiece(int x, int y, Piece piece) {
+    board[y][x] = piece;
+
+	return;
 }

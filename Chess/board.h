@@ -11,6 +11,7 @@ public:
     bool isKingChecked(PieceColor pieceColor) const;
     std::vector<sf::Vector2i> getPossibleSquares(sf::Vector2i selectedSquare) const;
     std::vector<sf::Vector2i> getAttackedSquares(sf::Vector2i selectedSquare) const;
+    void setPiece(int x, int y, Piece piece);
 
 private:
     Piece board[8][8];

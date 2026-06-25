@@ -27,7 +27,6 @@ bool Game::makeMove(int fromX, int fromY, int toX, int toY)
 
 	//std::cout << "move fromX " << (int)selectedPiece.x << ", fromY " << (int)selectedPiece.y << " - toX " << (int)selectedSquare.x << ", toY " << (int)selectedSquare.y << std::endl;
 
-
 	for (sf::Vector2i possibleSquare : possibleSquares)
 	{
 		if (possibleSquare.x == selectedSquare.x && possibleSquare.y == selectedSquare.y)
@@ -48,12 +47,9 @@ Board* Game::getBoard()
 }
 
 // Get the current player's color as a string
-std::string Game::getCurrentPlayerColor()
+PlayerColor Game::getCurrentPlayerColor()
 {
-	if (currentPlayerColor == PlayerColor::White)
-		return "White";
-	else
-		return "Black";
+	return currentPlayerColor;
 }
 
 // Change player color
@@ -63,6 +59,13 @@ void Game::changePlayerColor()
 		currentPlayerColor = PlayerColor::Black;
 	else
 		currentPlayerColor = PlayerColor::White;
+
+	return;
+}
+
+void Game::setPiece(int x, int y, Piece piece)
+{
+	board.setPiece(x, y, piece);
 
 	return;
 }

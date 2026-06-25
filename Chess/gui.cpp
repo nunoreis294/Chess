@@ -1,107 +1,27 @@
 #include <iostream>
 #include "gui.h"
+#include "utils.h"
 
 // Constructor
 Gui::Gui(Game& game)
     : game(game), window(sf::VideoMode({ 900, 600 }), "Chess")
 {
-	selectedSquare = sf::Vector2i(-1, -1);
-	selectedPiece = sf::Vector2i(-1, -1);
+    Utils utils;
 
-	// Load board square textures
-    const std::string squareColors[] = { "white", "black", "brown" };
-    const std::string squareTypes[] = { "", "-side", "-corner"};
-
-    for (const auto& color : squareColors)
-    {
-        for (const auto& type : squareTypes)
-        {
-			// Brown squares only have side and corner types (black and white have all three)
-            if (!(type == "" && color == "brown"))
-            {
-                std::string key = color + type;
-                std::string filename = "images/square-" + key + ".png";
-                sf::Texture texture;
-
-                if (!texture.loadFromFile(filename))
-                {
-                    std::cerr << "Failed to load " << filename << std::endl;
-                }
-
-                squareTextures[key] = texture;
-			}
-        }
-    }
+    // Load board square textures
+    squareTextures = utils.getSquareTextures();
 
 	// Load letter textures
-    const std::string letters[] = { "a", "b", "c", "d", "e", "f", "g", "h" };
-
-    for (const auto& letter : letters)
-    {
-        std::string key = letter;
-        std::string filename = "images/" + key + "-letter.png";
-        sf::Texture texture;
-
-        if (!texture.loadFromFile(filename))
-        {
-            std::cerr << "Failed to load " << filename << std::endl;
-        }
-
-        letterTextures[key] = texture;
-    }
+	letterTextures = utils.getLetterTextures();
 
     // Load digit textures
-    const std::string digits[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
-
-    for (const auto& digit : digits)
-    {
-        std::string key = digit;
-        std::string filename = "images/" + key + "-digit.png";
-        sf::Texture texture;
-
-        if (!texture.loadFromFile(filename))
-        {
-            std::cerr << "Failed to load " << filename << std::endl;
-        }
-
-        digitTextures[key] = texture;
-    }
+	digitTextures = utils.getDigitTextures();
 
 	// Load utility textures (possible squares, attacked squares and checked)
-	const std::string utilNames[] = { "dot", "attacked", "check"};
-
-    for (const auto& name : utilNames)
-    {
-        std::string key = name;
-        std::string filename = "images/" + key + ".png";
-        sf::Texture texture;
-        if (!texture.loadFromFile(filename))
-        {
-            std::cerr << "Failed to load " << filename << std::endl;
-        }
-        utilTextures[key] = texture;
-	}
+	utilTextures = utils.getUtilTextures();
 
 	// Load piece textures
-    const std::string pieceColors[] = { "white", "black" };
-    const std::string pieceTypes[] = { "pawn", "rook", "knight", "bishop", "queen", "king" };
-
-    for (const auto& color : pieceColors)
-    {
-        for (const auto& type : pieceTypes)
-        {
-            std::string key = type + "-" + color;
-            std::string filename = "images/" + key + ".png";
-            sf::Texture texture;
-
-            if (!texture.loadFromFile(filename))
-            {
-                std::cerr << "Failed to load " << filename << std::endl;
-            }
-
-            pieceTextures[key] = texture;
-        }
-    }
+	pieceTextures = utils.getPieceTextures();
 }
 
 // Run the GUI main loop
@@ -132,9 +52,9 @@ void Gui::run()
 
                 if (x > 0 && x <= 8 && y > 0 && y <= 8)
                 {
-                    std::string currentPlayerColor = game.getCurrentPlayerColor();
+                    PlayerColor currentPlayerColor = game.getCurrentPlayerColor();
 
-                    if (currentPlayerColor == "Black")
+                    if (currentPlayerColor == PlayerColor::Black)
                     {
                         x = 9 - x;
                         y = 9 - y;
@@ -146,12 +66,12 @@ void Gui::run()
 
                     Piece piece = board->getPiece(x - 1, y - 1);
 
-                    std::cout << "currentPlayerColor: " << currentPlayerColor << " - piece.color: " << (piece.color == PieceColor::White ? "White" : 
+                    std::cout << "currentPlayerColor: " << (currentPlayerColor == PlayerColor::White ? "White" : "Black") << " - piece.color: " << (piece.color == PieceColor::White ? "White" :
                         piece.color == PieceColor::Black ? "Black" : "None") << std::endl;
 
 					// Can select piece if there is no piece currently selected or if selecting own piece
-                    if ((currentPlayerColor == "White" && piece.color == PieceColor::White) ||
-                        (currentPlayerColor == "Black" && piece.color == PieceColor::Black))
+                    if ((currentPlayerColor == PlayerColor::White && piece.color == PieceColor::White) ||
+                        (currentPlayerColor == PlayerColor::Black && piece.color == PieceColor::Black))
                     {
                         std::cout << "select" << std::endl;
 
@@ -175,6 +95,15 @@ void Gui::run()
 								// Make the move/capture
 								bool success = game.makeMove((int)selectedPiece.x, (int)selectedPiece.y, (int)selectedSquare.x, (int)selectedSquare.y);
 
+								Piece movedPiece = board->getPiece(selectedSquare.x - 1, selectedSquare.y - 1);
+
+                                if (movedPiece.type == PieceType::Pawn && ((currentPlayerColor == PlayerColor::White && (int)selectedSquare.y -1 == 0) || (currentPlayerColor == PlayerColor::Black && (int)selectedSquare.y- 1 == 7)))
+                                {
+									//select promotion piece (for now, always promote to queen)
+									game.setPiece((int)selectedSquare.x - 1, (int)selectedSquare.y - 1, Piece{ PieceType::Queen, movedPiece.color });
+                                }
+
+								//Change player color if the move was successful
                                 if (success)
                                     game.changePlayerColor();
 
@@ -268,7 +197,7 @@ void Gui::drawBoard()
     const float tileSize = window.getSize().y / 10;
 
 	// Determine if player is white or black to adjust board orientation
-    bool playerWhiteColor = ("White" == game.getCurrentPlayerColor()) ? true : false;
+    bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
 
     for (int y = 0; y < 10; ++y)
     {
@@ -482,7 +411,7 @@ void Gui::drawPieces()
 	// Use absolute size to ensure pieces are always square
     const float tileSize = window.getSize().y / 10;
 
-    bool playerWhiteColor = ("White" == game.getCurrentPlayerColor()) ? true : false;
+    bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
 
 	// Draw pieces
     for (int y = 0; y < 8; ++y)
