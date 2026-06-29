@@ -68,8 +68,9 @@ std::vector<sf::Vector2i> Board::getPossibleSquares(sf::Vector2i selectedPiece) 
 
 	if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
 	{
-		if (piece.type == PieceType::Pawn)
+		switch (piece.type)
 		{
+		case PieceType::Pawn: {
 			int direction = piece.color == PieceColor::White ? -1 : 1;
 			sf::Vector2i forwardSquare = sf::Vector2i(selectedPiece.x, selectedPiece.y + direction);
 
@@ -90,6 +91,150 @@ std::vector<sf::Vector2i> Board::getPossibleSquares(sf::Vector2i selectedPiece) 
 				}
 			}
 		}
+			break;
+		case PieceType::Knight: {
+			int knightMoves[8][2] = {
+				{ 1, 2 }, { 2, 1 }, { 2, -1 }, { 1, -2 },
+				{ -1, -2 }, { -2, -1 }, { -2, 1 }, { -1, 2 }
+			};
+
+			for (const auto& move : knightMoves)
+			{
+				sf::Vector2i targetSquare = sf::Vector2i(selectedPiece.x + move[0], selectedPiece.y + move[1]);
+
+				if (targetSquare.x >= 1 && targetSquare.x <= 8 && targetSquare.y >= 1 && targetSquare.y <= 8)
+				{
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type == PieceType::None)
+					{
+						possibleSquares.push_back(targetSquare);
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Bishop: {
+			int directions[4][2] = {
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type == PieceType::None)
+					{
+						possibleSquares.push_back(targetSquare);
+					}
+					else
+					{
+						break; // Stop if a piece is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Rook: {
+			int directions[4][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type == PieceType::None)
+					{
+						possibleSquares.push_back(targetSquare);
+					}
+					else
+					{
+						break; // Stop if a piece is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Queen: {
+			int directions[8][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type == PieceType::None)
+					{
+						possibleSquares.push_back(targetSquare);
+					}
+					else
+					{
+						break; // Stop if a piece is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::King: {
+			int directions[8][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = sf::Vector2i(selectedPiece.x + dir[0], selectedPiece.y + dir[1]);
+
+				if (targetSquare.x >= 1 && targetSquare.x <= 8 && targetSquare.y >= 1 && targetSquare.y <= 8)
+				{
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type == PieceType::None)
+					{
+						possibleSquares.push_back(targetSquare);
+					}
+				}
+			}
+
+			//Castling
+		}
+			break;
+		default:
+			break;
+		}
 	}
 
 	return possibleSquares;
@@ -104,8 +249,9 @@ std::vector<sf::Vector2i> Board::getAttackedSquares(sf::Vector2i selectedPiece) 
 
 	if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
 	{
-		if (piece.type == PieceType::Pawn)
+		switch (piece.type)
 		{
+		case PieceType::Pawn: {
 			int direction = piece.color == PieceColor::White ? -1 : 1;
 
 			// Check for captures
@@ -131,6 +277,156 @@ std::vector<sf::Vector2i> Board::getAttackedSquares(sf::Vector2i selectedPiece) 
 					attackedSquares.push_back(captureRight);
 				}
 			}
+
+			//en passant
+		}
+			break;
+		case PieceType::Knight: {
+			int knightMoves[8][2] = {
+				{ 1, 2 }, { 2, 1 }, { 2, -1 }, { 1, -2 },
+				{ -1, -2 }, { -2, -1 }, { -2, 1 }, { -1, 2 }
+			};
+
+			for (const auto& move : knightMoves)
+			{
+				sf::Vector2i targetSquare = sf::Vector2i(selectedPiece.x + move[0], selectedPiece.y + move[1]);
+
+				if (targetSquare.x >= 1 && targetSquare.x <= 8 && targetSquare.y >= 1 && targetSquare.y <= 8)
+				{
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type != PieceType::None && targetPiece.color != board[(int)selectedPiece.y - 1][(int)selectedPiece.x - 1].color)
+					{
+						attackedSquares.push_back(targetSquare);
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Bishop: {
+			int directions[4][2] = {
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type != PieceType::None && targetPiece.color != board[(int)selectedPiece.y - 1][(int)selectedPiece.x - 1].color)
+					{
+						attackedSquares.push_back(targetSquare);
+
+						break; // Stop if a piece is encountered
+					}
+					else if (targetPiece.type != PieceType::None)
+					{
+						break; // Stop if a piece of the same color is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Rook: {
+			int directions[4][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type != PieceType::None && targetPiece.color != board[(int)selectedPiece.y - 1][(int)selectedPiece.x - 1].color)
+					{
+						attackedSquares.push_back(targetSquare);
+
+						break; // Stop if a piece is encountered
+					}
+					else if (targetPiece.type != PieceType::None)
+					{
+						break; // Stop if a piece of the same color is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::Queen: {
+			int directions[8][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = selectedPiece;
+
+				while (true)
+				{
+					targetSquare.x += dir[0];
+					targetSquare.y += dir[1];
+
+					if (targetSquare.x < 1 || targetSquare.x > 8 || targetSquare.y < 1 || targetSquare.y > 8)
+						break;
+
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type != PieceType::None && targetPiece.color != board[(int)selectedPiece.y - 1][(int)selectedPiece.x - 1].color)
+					{
+						attackedSquares.push_back(targetSquare);
+
+						break; // Stop if a piece is encountered
+					}
+					else if (targetPiece.type != PieceType::None)
+					{
+						break; // Stop if a piece of the same color is encountered
+					}
+				}
+			}
+		}
+			break;
+		case PieceType::King: {
+			//ckeck for check
+			int directions[8][2] = {
+				{ 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
+				{ 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 }
+			};
+
+			for (const auto& dir : directions)
+			{
+				sf::Vector2i targetSquare = sf::Vector2i(selectedPiece.x + dir[0], selectedPiece.y + dir[1]);
+
+				if (targetSquare.x >= 1 && targetSquare.x <= 8 && targetSquare.y >= 1 && targetSquare.y <= 8)
+				{
+					Piece targetPiece = board[(int)targetSquare.y - 1][(int)targetSquare.x - 1];
+
+					if (targetPiece.type != PieceType::None && targetPiece.color != board[(int)selectedPiece.y - 1][(int)selectedPiece.x - 1].color)
+					{
+						attackedSquares.push_back(targetSquare);
+					}
+				}
+			}
+		}
+			break;
+		default:
+			break;
 		}
 	}
 
