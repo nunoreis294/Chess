@@ -23,6 +23,8 @@ public:
     std::vector<Move> getMoveHistory() const;
     bool isKingChecked(PieceColor pieceColor) const;
     bool isKingCheckMated(PieceColor pieceColor) const;
+    bool leavesKingInCheck(int fromX, int fromY, int toX, int toY) const;
+    bool leavesKingInCheck(const sf::Vector2i &from, const sf::Vector2i &to) const;
     std::vector<sf::Vector2i> getAttackingPieces(PieceColor pieceColor, PieceType pieceType, int toX, int toY) const;
     std::vector<sf::Vector2i> getPossibleSquares(sf::Vector2i selectedSquare) const;
     std::vector<sf::Vector2i> getAttackedSquares(sf::Vector2i selectedSquare) const;
