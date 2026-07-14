@@ -385,6 +385,57 @@ bool Board::isKingCheckMated(PieceColor pieceColor) const
 	return true;
 }
 
+bool Board::isStalemated(PieceColor pieceColor) const
+{
+	if (isKingChecked(pieceColor))
+		return false;
+
+	for (int y = 0; y < 8; ++y)
+	{
+		for (int x = 0; x < 8; ++x)
+		{
+			Piece piece = board[y][x];
+			if (piece.type == PieceType::None || piece.color != pieceColor)
+				continue;
+
+			std::vector<sf::Vector2i> moves = getPossibleSquares(sf::Vector2i(x + 1, y + 1));
+			if (!moves.empty())
+				return false;
+		}
+	}
+
+	return true;
+}
+
+bool Board::isInsufficientMaterial() const
+{
+	int minorPieces = 0;
+	bool hasPawnRookQueen = false;
+
+	for (int y = 0; y < 8; ++y)
+	{
+		for (int x = 0; x < 8; ++x)
+		{
+			Piece piece = board[y][x];
+			if (piece.type == PieceType::None || piece.type == PieceType::King)
+				continue;
+
+			if (piece.type == PieceType::Pawn || piece.type == PieceType::Rook || piece.type == PieceType::Queen)
+			{
+				hasPawnRookQueen = true;
+				break;
+			}
+
+			++minorPieces;
+		}
+	}
+
+	if (hasPawnRookQueen)
+		return false;
+
+	return minorPieces <= 2;
+}
+
 std::vector<sf::Vector2i> Board::getAttackingPieces(PieceColor pieceColor, PieceType pieceType, int toX, int toY) const
 {
 	//TODO: Implement logic to find all pieces of the given type and color that can attack the square (toX, toY) excluding the piece that is currently on that square

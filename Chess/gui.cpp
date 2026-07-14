@@ -46,6 +46,46 @@ void Gui::run()
 				// Get mouse position
 				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
+				if (game.isGameOver())
+				{
+					const sf::Vector2u size = window.getSize();
+					const float buttonWidth = 150.f;
+					const float buttonHeight = 40.f;
+					const sf::Vector2f buttonPosition(size.x / 2.f - buttonWidth / 2.f, size.y / 2.f + 70.f);
+
+					if (mousePos.x >= buttonPosition.x && mousePos.x <= buttonPosition.x + buttonWidth &&
+						mousePos.y >= buttonPosition.y && mousePos.y <= buttonPosition.y + buttonHeight)
+					{
+						game.newGame();
+						selectedSquare = sf::Vector2i(-1, -1);
+						selectedPiece = sf::Vector2i(-1, -1);
+						isPromotionPending = false;
+						promotionSquare = sf::Vector2i(-1, -1);
+					}
+
+					continue;
+				}
+
+				if (!isPromotionPending && !game.isGameOver())
+				{
+					const float menuStartX = 600.f;
+					const float buttonWidth = 140.f;
+					const float buttonHeight = 35.f;
+					const float buttonX = menuStartX + 20.f;
+					const float buttonY = window.getSize().y - 60.f;
+
+					if (mousePos.x >= buttonX && mousePos.x <= buttonX + buttonWidth &&
+						mousePos.y >= buttonY && mousePos.y <= buttonY + buttonHeight)
+					{
+						game.resignCurrentPlayer();
+						selectedSquare = sf::Vector2i(-1, -1);
+						selectedPiece = sf::Vector2i(-1, -1);
+						isPromotionPending = false;
+						promotionSquare = sf::Vector2i(-1, -1);
+						continue;
+					}
+				}
+
 				// Check if clicking on promotion piece selection (when promotion is pending)
 				if (isPromotionPending)
 				{
@@ -65,6 +105,7 @@ void Gui::run()
 										 Piece{ PieceType::Queen, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
 							isPromotionPending = false;
 							game.changePlayerColor();
+							game.updateGameState();
 						}
 						else if (mousePos.y >= startY + spacing && mousePos.y < startY + spacing + buttonHeight)
 						{
@@ -73,6 +114,7 @@ void Gui::run()
 										 Piece{ PieceType::Rook, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
 							isPromotionPending = false;
 							game.changePlayerColor();
+							game.updateGameState();
 						}
 						else if (mousePos.y >= startY + 2*spacing && mousePos.y < startY + 2*spacing + buttonHeight)
 						{
@@ -81,6 +123,7 @@ void Gui::run()
 										 Piece{ PieceType::Bishop, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
 							isPromotionPending = false;
 							game.changePlayerColor();
+							game.updateGameState();
 						}
 						else if (mousePos.y >= startY + 3*spacing && mousePos.y < startY + 3*spacing + buttonHeight)
 						{
@@ -89,6 +132,7 @@ void Gui::run()
 										 Piece{ PieceType::Knight, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
 							isPromotionPending = false;
 							game.changePlayerColor();
+							game.updateGameState();
 						}
 					}
 					//return;
@@ -156,6 +200,7 @@ void Gui::run()
 								{
 									//Change player color if the move was successful and not pending promotion
 									game.changePlayerColor();
+									game.updateGameState();
 								}
 
 								break;
@@ -513,11 +558,11 @@ void Gui::drawMenu()
 	const float menuWidth = 300.f;
 	const float tileSize = window.getSize().y / 10;
 
-    const sf::Font font("Pixel.ttf");
+	const sf::Font font("Pixel.ttf");
 
-    // Create a text
-    sf::Text text(font, "hello");
-    text.setCharacterSize(20);
+	// Create a text
+	sf::Text text(font, "hello");
+	text.setCharacterSize(20);
 
 	// Draw menu background
 	sf::RectangleShape menuBackground(sf::Vector2f(menuWidth, window.getSize().y));
@@ -535,9 +580,27 @@ void Gui::drawMenu()
 
 	// Draw title
 	sf::Text titleText(font, "Moves");
-	titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
-	titleText.setFillColor(sf::Color::Black);
+titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
+titleText.setFillColor(sf::Color::Black);
 	window.draw(titleText);
+
+	const float resignButtonWidth = 140.f;
+	const float resignButtonHeight = 35.f;
+	const float resignButtonX = menuStartX + 20.f;
+	const float resignButtonY = window.getSize().y - 60.f;
+
+	sf::RectangleShape resignButton(sf::Vector2f(resignButtonWidth, resignButtonHeight));
+	resignButton.setPosition(sf::Vector2f(resignButtonX, resignButtonY));
+	resignButton.setFillColor(sf::Color(220, 220, 220));
+	resignButton.setOutlineColor(sf::Color::Black);
+	resignButton.setOutlineThickness(1.f);
+	window.draw(resignButton);
+
+	sf::Text resignText(font, "Resign");
+	resignText.setCharacterSize(16);
+	resignText.setPosition(sf::Vector2f(resignButtonX + 42.f, resignButtonY + 8.f));
+	resignText.setFillColor(sf::Color::Black);
+	window.draw(resignText);
 
 	Board* board = game.getBoard();
 
@@ -555,6 +618,47 @@ void Gui::drawMenu()
 		moveTextObj.setFillColor(sf::Color::Black);
 		window.draw(moveTextObj);
 		moveY += 25.f;
+	}
+
+	if (game.isGameOver())
+	{
+		sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
+		overlay.setFillColor(sf::Color(0, 0, 0, 160));
+		window.draw(overlay);
+
+		sf::RectangleShape dialogBackground(sf::Vector2f(320.f, 220.f));
+		dialogBackground.setPosition(sf::Vector2f((window.getSize().x - 320.f) / 2.f, (window.getSize().y - 220.f) / 2.f));
+		dialogBackground.setFillColor(sf::Color(255, 255, 255));
+		dialogBackground.setOutlineColor(sf::Color::Black);
+		dialogBackground.setOutlineThickness(2.f);
+		window.draw(dialogBackground);
+
+		GameResult result = game.getGameResult();
+		std::string title = result.type == GameResultType::Checkmate ? "Checkmate" : result.type == GameResultType::Resignation ? "Resignation" : "Draw";
+		sf::Text resultTitle(font, title);
+		resultTitle.setCharacterSize(24);
+		resultTitle.setPosition(sf::Vector2f((window.getSize().x - 120.f) / 2.f, (window.getSize().y - 220.f) / 2.f + 25.f));
+		resultTitle.setFillColor(sf::Color::Black);
+		window.draw(resultTitle);
+
+		sf::Text resultMessage(font, result.message);
+		resultMessage.setCharacterSize(18);
+		resultMessage.setPosition(sf::Vector2f((window.getSize().x - 110.f) / 2.f, (window.getSize().y - 220.f) / 2.f + 70.f));
+		resultMessage.setFillColor(sf::Color::Black);
+		window.draw(resultMessage);
+
+		sf::RectangleShape restartButton(sf::Vector2f(150.f, 40.f));
+		restartButton.setPosition(sf::Vector2f(window.getSize().x / 2.f - 75.f, window.getSize().y / 2.f + 70.f));
+		restartButton.setFillColor(sf::Color(200, 200, 200));
+		restartButton.setOutlineColor(sf::Color::Black);
+		restartButton.setOutlineThickness(1.f);
+		window.draw(restartButton);
+
+		sf::Text restartText(font, "Restart");
+		restartText.setCharacterSize(16);
+		restartText.setPosition(sf::Vector2f(window.getSize().x / 2.f - 45.f, window.getSize().y / 2.f + 80.f));
+		restartText.setFillColor(sf::Color::Black);
+		window.draw(restartText);
 	}
 
 	// Draw promotion piece selection menu if promotion is pending

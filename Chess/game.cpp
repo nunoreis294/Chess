@@ -11,6 +11,7 @@ void Game::newGame()
 {
 	board.reset();
 	currentPlayerColor = PlayerColor::White;
+	gameResult = { GameResultType::None, PieceColor::None, "" };
 }
 
 // Make a move from (fromX, fromY) to (toX, toY)
@@ -61,6 +62,43 @@ void Game::changePlayerColor()
 		currentPlayerColor = PlayerColor::White;
 
 	return;
+}
+
+void Game::updateGameState()
+{
+	PieceColor sideToMove = currentPlayerColor == PlayerColor::White ? PieceColor::White : PieceColor::Black;
+
+	if (board.isKingCheckMated(sideToMove))
+	{
+		PieceColor winner = sideToMove == PieceColor::White ? PieceColor::Black : PieceColor::White;
+		std::string message = winner == PieceColor::White ? "White wins" : "Black wins";
+		gameResult = { GameResultType::Checkmate, winner, message };
+	}
+	else if (board.isStalemated(sideToMove) || board.isInsufficientMaterial())
+	{
+		gameResult = { GameResultType::Draw, PieceColor::None, "Draw" };
+	}
+	else
+	{
+		gameResult = { GameResultType::None, PieceColor::None, "" };
+	}
+}
+
+void Game::resignCurrentPlayer()
+{
+	PieceColor winner = currentPlayerColor == PlayerColor::White ? PieceColor::Black : PieceColor::White;
+	std::string message = winner == PieceColor::White ? "White wins by resignation" : "Black wins by resignation";
+	gameResult = { GameResultType::Resignation, winner, message };
+}
+
+bool Game::isGameOver() const
+{
+	return gameResult.type != GameResultType::None;
+}
+
+GameResult Game::getGameResult() const
+{
+	return gameResult;
 }
 
 void Game::setPiece(int x, int y, Piece piece)

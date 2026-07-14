@@ -13,3 +13,9 @@ Quick commands
 Where to look first for issues
 - board.cpp - move generation, check logic, special moves
 - gui.cpp - input coordinates, drawing, selection logic
+
+Recent gameplay and UI changes
+- End-of-game handling was added for checkmate and draw states.
+- The UI now shows a game-over overlay with a Restart button after a finished game.
+- A Resign button was added to the side menu so the current player can concede immediately.
+- Game result state is evaluated after successful moves and promotions, and the overlay uses the detected outcome.
