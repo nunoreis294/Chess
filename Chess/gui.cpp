@@ -1,20 +1,22 @@
-#include <iostream>
+﻿#include <iostream>
 #include "gui.h"
 #include "utils.h"
 
 // Constructor
 Gui::Gui(Game& game)
-    : game(game), window(sf::VideoMode({ 900, 600 }), "Chess")
+	: game(game), window(sf::VideoMode({ 900, 600 }), "Chess"), 
+	  isPromotionPending(false), promotionSquare(-1, -1),
+	  selectedSquare(-1, -1), selectedPiece(-1, -1)
 {
-    Utils utils;
+	Utils utils;
 
-    // Load board square textures
-    squareTextures = utils.getSquareTextures();
+	// Load board square textures
+	squareTextures = utils.getSquareTextures();
 
 	// Load letter textures
 	letterTextures = utils.getLetterTextures();
 
-    // Load digit textures
+	// Load digit textures
 	digitTextures = utils.getDigitTextures();
 
 	// Load utility textures (possible squares, attacked squares and checked)
@@ -39,11 +41,58 @@ void Gui::run()
             if (event->is<sf::Event::Closed>())
                 window.close();
 
-			// Handle mouse click events for selecting pieces and squares
 			if (event->is<sf::Event::MouseButtonPressed>())
-            {
+			{
 				// Get mouse position
 				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+				// Check if clicking on promotion piece selection (when promotion is pending)
+				if (isPromotionPending)
+				{
+					const float menuStartX = 600.f;
+					const float buttonWidth = 150.f;
+					const float buttonHeight = 50.f;
+					const float startY = 150.f;
+					const float spacing = 60.f;
+
+					// Check which promotion piece was clicked
+					if (mousePos.x >= menuStartX && mousePos.x <= menuStartX + buttonWidth)
+					{
+						if (mousePos.y >= startY && mousePos.y < startY + buttonHeight)
+						{
+							// Queen
+							game.setPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1, 
+										 Piece{ PieceType::Queen, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
+							isPromotionPending = false;
+							game.changePlayerColor();
+						}
+						else if (mousePos.y >= startY + spacing && mousePos.y < startY + spacing + buttonHeight)
+						{
+							// Rook
+							game.setPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1, 
+										 Piece{ PieceType::Rook, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
+							isPromotionPending = false;
+							game.changePlayerColor();
+						}
+						else if (mousePos.y >= startY + 2*spacing && mousePos.y < startY + 2*spacing + buttonHeight)
+						{
+							// Bishop
+							game.setPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1, 
+										 Piece{ PieceType::Bishop, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
+							isPromotionPending = false;
+							game.changePlayerColor();
+						}
+						else if (mousePos.y >= startY + 3*spacing && mousePos.y < startY + 3*spacing + buttonHeight)
+						{
+							// Knight
+							game.setPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1, 
+										 Piece{ PieceType::Knight, board->getPiece((int)promotionSquare.x - 1, (int)promotionSquare.y - 1).color });
+							isPromotionPending = false;
+							game.changePlayerColor();
+						}
+					}
+					//return;
+				}
 
 				// Calculate selected square based on mouse position
 				const float tileSize = window.getSize().y / 10;
@@ -73,13 +122,13 @@ void Gui::run()
                     if ((currentPlayerColor == PlayerColor::White && piece.color == PieceColor::White) ||
                         (currentPlayerColor == PlayerColor::Black && piece.color == PieceColor::Black))
                     {
-                        std::cout << "select" << std::endl;
+                        //std::cout << "select" << std::endl;
 
                         selectedPiece = selectedSquare;
                     }
 					else if (selectedPiece.x != -1.f && selectedPiece.y != -1.f)
                     {
-                        std::cout << "move" << std::endl;
+                        //std::cout << "move" << std::endl;
 
 						// Check if the selected square is a valid move or attack for the selected piece
                         std::vector<sf::Vector2i> possibleSquares = { board->getPossibleSquares(selectedPiece) };
@@ -90,24 +139,26 @@ void Gui::run()
 
                         for (sf::Vector2i possibleSquare : possibleSquares)
                         {
-                            if (possibleSquare.x == selectedSquare.x && possibleSquare.y == selectedSquare.y)
-                            {
+							if (possibleSquare.x == selectedSquare.x && possibleSquare.y == selectedSquare.y)
+							{
 								// Make the move/capture
 								bool success = game.makeMove((int)selectedPiece.x, (int)selectedPiece.y, (int)selectedSquare.x, (int)selectedSquare.y);
 
 								Piece movedPiece = board->getPiece(selectedSquare.x - 1, selectedSquare.y - 1);
 
-                                if (movedPiece.type == PieceType::Pawn && ((currentPlayerColor == PlayerColor::White && (int)selectedSquare.y -1 == 0) || (currentPlayerColor == PlayerColor::Black && (int)selectedSquare.y- 1 == 7)))
-                                {
-									//select promotion piece (for now, always promote to queen)
-									game.setPiece((int)selectedSquare.x - 1, (int)selectedSquare.y - 1, Piece{ PieceType::Queen, movedPiece.color });
-                                }
+								if (success && movedPiece.type == PieceType::Pawn && ((currentPlayerColor == PlayerColor::White && (int)selectedSquare.y - 1 == 0) || (currentPlayerColor == PlayerColor::Black && (int)selectedSquare.y - 1 == 7)))
+								{
+									// Set promotion pending state
+									isPromotionPending = true;
+									promotionSquare = selectedSquare;
+								}
+								else if (success)
+								{
+									//Change player color if the move was successful and not pending promotion
+									game.changePlayerColor();
+								}
 
-								//Change player color if the move was successful
-                                if (success)
-                                    game.changePlayerColor();
-
-                                break;
+								break;
 							}
                         }
 
@@ -180,7 +231,7 @@ void Gui::run()
         drawPieces();
 
 		// Draw additional GUI elements (menu, moves, etc.)
-        
+		drawMenu();
 
 		// Update the window
         window.display();
@@ -453,4 +504,106 @@ void Gui::drawPieces()
             }
         }
     }
+}
+
+// Draw additional GUI elements (menu, moves, etc.)
+void Gui::drawMenu()
+{
+	const float menuStartX = 600.f;
+	const float menuWidth = 300.f;
+	const float tileSize = window.getSize().y / 10;
+
+    const sf::Font font("Pixel.ttf");
+
+    // Create a text
+    sf::Text text(font, "hello");
+    text.setCharacterSize(20);
+
+	// Draw menu background
+	sf::RectangleShape menuBackground(sf::Vector2f(menuWidth, window.getSize().y));
+	menuBackground.setPosition(sf::Vector2f(menuStartX, 0.f));
+	menuBackground.setFillColor(sf::Color(240, 240, 240));
+	window.draw(menuBackground);
+
+	// Draw menu border
+	sf::RectangleShape menuBorder(sf::Vector2f(menuWidth, window.getSize().y));
+	menuBorder.setPosition(sf::Vector2f(menuStartX, 0.f));
+	menuBorder.setFillColor(sf::Color::Transparent);
+	menuBorder.setOutlineColor(sf::Color::Black);
+	menuBorder.setOutlineThickness(2.f);
+	window.draw(menuBorder);
+
+	// Draw title
+	sf::Text titleText(font, "Moves");
+	titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
+	titleText.setFillColor(sf::Color::Black);
+	window.draw(titleText);
+
+	Board* board = game.getBoard();
+
+	std::vector<Move> moveHistory = board->getMoveHistory();
+	// Draw move history (show last 8 moves)
+	float moveY = 50.f;
+	int startIndex = std::max(0, (int)moveHistory.size() - 8);
+
+	for (int i = startIndex; i < (int)moveHistory.size(); ++i)
+	{
+		std::string moveText = moveHistory[i].notation;
+		sf::Text moveTextObj(font, moveText);
+		moveTextObj.setCharacterSize(14);
+		moveTextObj.setPosition(sf::Vector2f(menuStartX + 10.f, moveY));
+		moveTextObj.setFillColor(sf::Color::Black);
+		window.draw(moveTextObj);
+		moveY += 25.f;
+	}
+
+	// Draw promotion piece selection menu if promotion is pending
+	if (isPromotionPending)
+	{
+		// Draw semi-transparent overlay
+		sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
+		overlay.setFillColor(sf::Color(0, 0, 0, 100));
+		window.draw(overlay);
+
+		// Draw promotion dialog background
+		sf::RectangleShape dialogBackground(sf::Vector2f(250.f, 300.f));
+		dialogBackground.setPosition(sf::Vector2f(menuStartX + 25.f, 100.f));
+		dialogBackground.setFillColor(sf::Color(255, 255, 255));
+		dialogBackground.setOutlineColor(sf::Color::Black);
+		dialogBackground.setOutlineThickness(2.f);
+		window.draw(dialogBackground);
+
+		// Draw promotion title
+		sf::Text promotionTitle(font, "Select Piece");
+        promotionTitle.setCharacterSize(14);
+		promotionTitle.setPosition(sf::Vector2f(menuStartX + 40.f, 115.f));
+		promotionTitle.setFillColor(sf::Color::Black);
+		window.draw(promotionTitle);
+
+		// Draw promotion piece options
+		const float buttonWidth = 150.f;
+		const float buttonHeight = 50.f;
+		const float startY = 150.f;
+		const float spacing = 60.f;
+		const sf::Color buttonColor(200, 200, 200);
+		const sf::Color buttonHoverColor(150, 150, 150);
+
+		std::vector<std::string> promotionPieces = { "Queen", "Rook", "Bishop", "Knight" };
+
+		for (int i = 0; i < 4; ++i)
+		{
+			sf::RectangleShape button(sf::Vector2f(buttonWidth, buttonHeight));
+			button.setPosition(sf::Vector2f(menuStartX + 50.f, startY + i * spacing));
+			button.setFillColor(buttonColor);
+			button.setOutlineColor(sf::Color::Black);
+			button.setOutlineThickness(1.f);
+			window.draw(button);
+
+			sf::Text buttonText(font, promotionPieces[i]);
+            buttonText.setCharacterSize(16);
+			buttonText.setPosition(sf::Vector2f(menuStartX + 65.f, startY + i * spacing + 12.f));
+			buttonText.setFillColor(sf::Color::Black);
+			window.draw(buttonText);
+		}
+	}
 }

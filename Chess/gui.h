@@ -3,25 +3,44 @@
 #include <SFML/Graphics.hpp>
 #include "game.h"
 #include <map>
+#include <vector>
+#include <string>
 
+/**
+ * @file gui.h
+ * @brief GUI layer using SFML to render board and handle user input.
+ */
+
+/** Manages the application window, rendering and input for a Game. */
 class Gui {
 public:
-    Gui(Game& game);
-    void run();
+	/** Construct GUI bound to a Game instance. */
+	Gui(Game& game);
+
+	/** Run the main loop. */
+	void run();
 
 private:
-    Game& game;
-    sf::RenderWindow window;
+	Game& game;
+	sf::RenderWindow window;
 
-    std::map<std::string, sf::Texture> squareTextures;
-    std::map<std::string, sf::Texture> letterTextures;
-    std::map<std::string, sf::Texture> digitTextures;
-    std::map<std::string, sf::Texture> pieceTextures;
-    std::map<std::string, sf::Texture> utilTextures;
+	// Texture containers for board rendering
+	std::map<std::string, sf::Texture> squareTextures;
+	std::map<std::string, sf::Texture> letterTextures;
+	std::map<std::string, sf::Texture> digitTextures;
+	std::map<std::string, sf::Texture> pieceTextures;
+	std::map<std::string, sf::Texture> utilTextures;
 
 	sf::Vector2i selectedSquare;
-    sf::Vector2i selectedPiece;
+	sf::Vector2i selectedPiece;
 
-    void drawBoard();
-    void drawPieces();
+	// Promotion state
+	bool isPromotionPending;
+	sf::Vector2i promotionSquare;
+
+	sf::Font font;
+
+	void drawBoard();
+	void drawPieces();
+	void drawMenu();
 };
