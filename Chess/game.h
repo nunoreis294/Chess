@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "board.h"
 
@@ -18,6 +19,12 @@ struct GameResult {
     GameResultType type;
     PieceColor winner;
     std::string message;
+};
+
+struct GameSnapshot {
+    Board board;
+    PlayerColor currentPlayerColor;
+    GameResult gameResult;
 };
 
 /**
@@ -51,6 +58,21 @@ public:
     /** Whether the game has already ended. */
     bool isGameOver() const;
 
+    /** Save the current board state to the history for later review. */
+    void saveCurrentState();
+
+    /** Navigate to the previous stored position in the current game history. */
+    void goToPreviousMove();
+
+    /** Navigate to the next stored position in the current game history. */
+    void goToNextMove();
+
+    /** Whether a previous position is available for analysis. */
+    bool canGoToPreviousMove() const;
+
+    /** Whether a following position is available for analysis. */
+    bool canGoToNextMove() const;
+
     /** Get the current game result. */
     GameResult getGameResult() const;
 
@@ -61,4 +83,8 @@ private:
     Board board;
     PlayerColor currentPlayerColor;
     GameResult gameResult;
+    std::vector<GameSnapshot> history;
+    int historyIndex;
+
+    void restoreStateAt(int index);
 };

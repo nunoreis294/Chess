@@ -12,6 +12,9 @@ void Game::newGame()
 	board.reset();
 	currentPlayerColor = PlayerColor::White;
 	gameResult = { GameResultType::None, PieceColor::None, "" };
+	history.clear();
+	historyIndex = -1;
+	saveCurrentState();
 }
 
 // Make a move from (fromX, fromY) to (toX, toY)
@@ -89,11 +92,40 @@ void Game::resignCurrentPlayer()
 	PieceColor winner = currentPlayerColor == PlayerColor::White ? PieceColor::Black : PieceColor::White;
 	std::string message = winner == PieceColor::White ? "White wins by resignation" : "Black wins by resignation";
 	gameResult = { GameResultType::Resignation, winner, message };
+	saveCurrentState();
 }
 
 bool Game::isGameOver() const
 {
 	return gameResult.type != GameResultType::None;
+}
+
+void Game::goToPreviousMove()
+{
+	if (canGoToPreviousMove())
+	{
+		--historyIndex;
+		restoreStateAt(historyIndex);
+	}
+}
+
+void Game::goToNextMove()
+{
+	if (canGoToNextMove())
+	{
+		++historyIndex;
+		restoreStateAt(historyIndex);
+	}
+}
+
+bool Game::canGoToPreviousMove() const
+{
+	return historyIndex > 0;
+}
+
+bool Game::canGoToNextMove() const
+{
+	return historyIndex >= 0 && historyIndex < (int)history.size() - 1;
 }
 
 GameResult Game::getGameResult() const
@@ -106,4 +138,25 @@ void Game::setPiece(int x, int y, Piece piece)
 	board.setPiece(x, y, piece);
 
 	return;
+}
+
+void Game::saveCurrentState()
+{
+	if (historyIndex >= 0 && historyIndex < (int)history.size() - 1)
+		history.erase(history.begin() + historyIndex + 1, history.end());
+
+	history.push_back({ board, currentPlayerColor, gameResult });
+	historyIndex = (int)history.size() - 1;
+}
+
+void Game::restoreStateAt(int index)
+{
+	if (index < 0 || index >= (int)history.size())
+		return;
+
+	const GameSnapshot& snapshot = history[index];
+	board = snapshot.board;
+	currentPlayerColor = snapshot.currentPlayerColor;
+	gameResult = snapshot.gameResult;
+	historyIndex = index;
 }

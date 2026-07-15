@@ -38,6 +38,9 @@ private:
 	bool isPromotionPending;
 	sf::Vector2i promotionSquare;
 
+	// Analysis state after a finished game
+	bool isAnalyzing;
+
 	sf::Font font;
 
 	void drawBoard();

@@ -6,7 +6,7 @@
 Gui::Gui(Game& game)
 	: game(game), window(sf::VideoMode({ 900, 600 }), "Chess"), 
 	  isPromotionPending(false), promotionSquare(-1, -1),
-	  selectedSquare(-1, -1), selectedPiece(-1, -1)
+	  selectedSquare(-1, -1), selectedPiece(-1, -1), isAnalyzing(false)
 {
 	Utils utils;
 
@@ -46,21 +46,75 @@ void Gui::run()
 				// Get mouse position
 				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
-				if (game.isGameOver())
+				if (game.isGameOver() && !isAnalyzing)
 				{
 					const sf::Vector2u size = window.getSize();
-					const float buttonWidth = 150.f;
-					const float buttonHeight = 40.f;
-					const sf::Vector2f buttonPosition(size.x / 2.f - buttonWidth / 2.f, size.y / 2.f + 70.f);
+					const float overlayWidth = 320.f;
+					const float overlayHeight = 220.f;
+					const sf::Vector2f overlayPosition((size.x - overlayWidth) / 2.f, (size.y - overlayHeight) / 2.f);
+					const float buttonWidth = 140.f;
+					const float buttonHeight = 35.f;
+					const float analyzeButtonX = overlayPosition.x + 20.f;
+					const float analyzeButtonY = overlayPosition.y + 150.f;
+					const float restartButtonX = overlayPosition.x + overlayWidth - 20.f - buttonWidth;
+					const float restartButtonY = overlayPosition.y + 150.f;
 
-					if (mousePos.x >= buttonPosition.x && mousePos.x <= buttonPosition.x + buttonWidth &&
-						mousePos.y >= buttonPosition.y && mousePos.y <= buttonPosition.y + buttonHeight)
+					if (mousePos.x >= analyzeButtonX && mousePos.x <= analyzeButtonX + buttonWidth &&
+						mousePos.y >= analyzeButtonY && mousePos.y <= analyzeButtonY + buttonHeight)
+					{
+						isAnalyzing = true;
+						continue;
+					}
+
+					if (mousePos.x >= restartButtonX && mousePos.x <= restartButtonX + buttonWidth &&
+						mousePos.y >= restartButtonY && mousePos.y <= restartButtonY + buttonHeight)
 					{
 						game.newGame();
 						selectedSquare = sf::Vector2i(-1, -1);
 						selectedPiece = sf::Vector2i(-1, -1);
 						isPromotionPending = false;
 						promotionSquare = sf::Vector2i(-1, -1);
+						isAnalyzing = false;
+						continue;
+					}
+
+					continue;
+				}
+
+				if (isAnalyzing)
+				{
+					const float menuStartX = 600.f;
+					const float buttonWidth = 140.f;
+					const float buttonHeight = 35.f;
+					const float previousButtonX = menuStartX + 20.f;
+					const float nextButtonX = menuStartX + 20.f + buttonWidth + 10.f;
+					const float restartButtonY = window.getSize().y - 180.f;
+					const float restartButtonX = menuStartX + 20.f;
+
+					if (mousePos.x >= previousButtonX && mousePos.x <= previousButtonX + buttonWidth &&
+						mousePos.y >= window.getSize().y - 120.f && mousePos.y <= window.getSize().y - 120.f + buttonHeight)
+					{
+						game.goToPreviousMove();
+						continue;
+					}
+
+					if (mousePos.x >= nextButtonX && mousePos.x <= nextButtonX + buttonWidth &&
+						mousePos.y >= window.getSize().y - 120.f && mousePos.y <= window.getSize().y - 120.f + buttonHeight)
+					{
+						game.goToNextMove();
+						continue;
+					}
+
+					if (mousePos.x >= restartButtonX && mousePos.x <= restartButtonX + buttonWidth &&
+						mousePos.y >= restartButtonY && mousePos.y <= restartButtonY + buttonHeight)
+					{
+						game.newGame();
+						selectedSquare = sf::Vector2i(-1, -1);
+						selectedPiece = sf::Vector2i(-1, -1);
+						isPromotionPending = false;
+						promotionSquare = sf::Vector2i(-1, -1);
+						isAnalyzing = false;
+						continue;
 					}
 
 					continue;
@@ -106,6 +160,8 @@ void Gui::run()
 							isPromotionPending = false;
 							game.changePlayerColor();
 							game.updateGameState();
+							game.saveCurrentState();
+							isAnalyzing = false;
 						}
 						else if (mousePos.y >= startY + spacing && mousePos.y < startY + spacing + buttonHeight)
 						{
@@ -115,6 +171,8 @@ void Gui::run()
 							isPromotionPending = false;
 							game.changePlayerColor();
 							game.updateGameState();
+							game.saveCurrentState();
+							isAnalyzing = false;
 						}
 						else if (mousePos.y >= startY + 2*spacing && mousePos.y < startY + 2*spacing + buttonHeight)
 						{
@@ -124,6 +182,8 @@ void Gui::run()
 							isPromotionPending = false;
 							game.changePlayerColor();
 							game.updateGameState();
+							game.saveCurrentState();
+							isAnalyzing = false;
 						}
 						else if (mousePos.y >= startY + 3*spacing && mousePos.y < startY + 3*spacing + buttonHeight)
 						{
@@ -133,6 +193,8 @@ void Gui::run()
 							isPromotionPending = false;
 							game.changePlayerColor();
 							game.updateGameState();
+							game.saveCurrentState();
+							isAnalyzing = false;
 						}
 					}
 					//return;
@@ -201,6 +263,8 @@ void Gui::run()
 									//Change player color if the move was successful and not pending promotion
 									game.changePlayerColor();
 									game.updateGameState();
+									game.saveCurrentState();
+									isAnalyzing = false;
 								}
 
 								break;
@@ -293,7 +357,7 @@ void Gui::drawBoard()
     const float tileSize = window.getSize().y / 10;
 
 	// Determine if player is white or black to adjust board orientation
-    bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
+	bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
 
     for (int y = 0; y < 10; ++y)
     {
@@ -584,23 +648,74 @@ titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
 titleText.setFillColor(sf::Color::Black);
 	window.draw(titleText);
 
-	const float resignButtonWidth = 140.f;
-	const float resignButtonHeight = 35.f;
+	const float sideButtonWidth = 140.f;
+	const float sideButtonHeight = 35.f;
 	const float resignButtonX = menuStartX + 20.f;
 	const float resignButtonY = window.getSize().y - 60.f;
+	const float previousButtonX = menuStartX + 20.f;
+	const float previousButtonY = window.getSize().y - 120.f;
+	const float nextButtonX = menuStartX + 20.f + sideButtonWidth + 10.f;
+	const float nextButtonY = window.getSize().y - 120.f;
+	const float restartButtonX = menuStartX + 20.f;
+	const float restartButtonY = window.getSize().y - 180.f;
 
-	sf::RectangleShape resignButton(sf::Vector2f(resignButtonWidth, resignButtonHeight));
-	resignButton.setPosition(sf::Vector2f(resignButtonX, resignButtonY));
-	resignButton.setFillColor(sf::Color(220, 220, 220));
-	resignButton.setOutlineColor(sf::Color::Black);
-	resignButton.setOutlineThickness(1.f);
-	window.draw(resignButton);
+	if (!isAnalyzing)
+	{
+		sf::RectangleShape resignButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
+		resignButton.setPosition(sf::Vector2f(resignButtonX, resignButtonY));
+		resignButton.setFillColor(sf::Color(220, 220, 220));
+		resignButton.setOutlineColor(sf::Color::Black);
+		resignButton.setOutlineThickness(1.f);
+		window.draw(resignButton);
 
-	sf::Text resignText(font, "Resign");
-	resignText.setCharacterSize(16);
-	resignText.setPosition(sf::Vector2f(resignButtonX + 42.f, resignButtonY + 8.f));
-	resignText.setFillColor(sf::Color::Black);
-	window.draw(resignText);
+		sf::Text resignText(font, "Resign");
+		resignText.setCharacterSize(16);
+		resignText.setPosition(sf::Vector2f(resignButtonX + 42.f, resignButtonY + 8.f));
+		resignText.setFillColor(sf::Color::Black);
+		window.draw(resignText);
+	}
+
+	if (isAnalyzing || game.isGameOver())
+	{
+		sf::RectangleShape previousButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
+		previousButton.setPosition(sf::Vector2f(previousButtonX, previousButtonY));
+		previousButton.setFillColor(sf::Color(220, 220, 220));
+		previousButton.setOutlineColor(sf::Color::Black);
+		previousButton.setOutlineThickness(1.f);
+		window.draw(previousButton);
+
+		sf::Text previousText(font, "Previous");
+		previousText.setCharacterSize(16);
+		previousText.setPosition(sf::Vector2f(previousButtonX + 25.f, previousButtonY + 8.f));
+		previousText.setFillColor(sf::Color::Black);
+		window.draw(previousText);
+
+		sf::RectangleShape nextButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
+		nextButton.setPosition(sf::Vector2f(nextButtonX, nextButtonY));
+		nextButton.setFillColor(sf::Color(220, 220, 220));
+		nextButton.setOutlineColor(sf::Color::Black);
+		nextButton.setOutlineThickness(1.f);
+		window.draw(nextButton);
+
+		sf::Text nextText(font, "Next");
+		nextText.setCharacterSize(16);
+		nextText.setPosition(sf::Vector2f(nextButtonX + 45.f, nextButtonY + 8.f));
+		nextText.setFillColor(sf::Color::Black);
+		window.draw(nextText);
+
+		sf::RectangleShape restartButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
+		restartButton.setPosition(sf::Vector2f(restartButtonX, restartButtonY));
+		restartButton.setFillColor(sf::Color(220, 220, 220));
+		restartButton.setOutlineColor(sf::Color::Black);
+		restartButton.setOutlineThickness(1.f);
+		window.draw(restartButton);
+
+		sf::Text restartText(font, "Restart");
+		restartText.setCharacterSize(16);
+		restartText.setPosition(sf::Vector2f(restartButtonX + 40.f, restartButtonY + 8.f));
+		restartText.setFillColor(sf::Color::Black);
+		window.draw(restartText);
+	}
 
 	Board* board = game.getBoard();
 
@@ -620,7 +735,7 @@ titleText.setFillColor(sf::Color::Black);
 		moveY += 25.f;
 	}
 
-	if (game.isGameOver())
+	if (!isAnalyzing && game.isGameOver())
 	{
 		sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
 		overlay.setFillColor(sf::Color(0, 0, 0, 160));
@@ -634,31 +749,54 @@ titleText.setFillColor(sf::Color::Black);
 		window.draw(dialogBackground);
 
 		GameResult result = game.getGameResult();
-		std::string title = result.type == GameResultType::Checkmate ? "Checkmate" : result.type == GameResultType::Resignation ? "Resignation" : "Draw";
+		std::string title = result.type == GameResultType::Checkmate ? "Checkmate" : result.type == GameResultType::Resignation ? "Resignation" : result.type == GameResultType::Draw ? "Draw" : "Analysis";
 		sf::Text resultTitle(font, title);
 		resultTitle.setCharacterSize(24);
 		resultTitle.setPosition(sf::Vector2f((window.getSize().x - 120.f) / 2.f, (window.getSize().y - 220.f) / 2.f + 25.f));
 		resultTitle.setFillColor(sf::Color::Black);
 		window.draw(resultTitle);
 
-		sf::Text resultMessage(font, result.message);
+		sf::Text resultMessage(font, isAnalyzing ? "Use the side menu to review the moves." : (result.message.empty() ? "Review the game move by move" : result.message));
 		resultMessage.setCharacterSize(18);
-		resultMessage.setPosition(sf::Vector2f((window.getSize().x - 110.f) / 2.f, (window.getSize().y - 220.f) / 2.f + 70.f));
+		resultMessage.setPosition(sf::Vector2f((window.getSize().x - 240.f) / 2.f, (window.getSize().y - 220.f) / 2.f + 70.f));
 		resultMessage.setFillColor(sf::Color::Black);
 		window.draw(resultMessage);
 
-		sf::RectangleShape restartButton(sf::Vector2f(150.f, 40.f));
-		restartButton.setPosition(sf::Vector2f(window.getSize().x / 2.f - 75.f, window.getSize().y / 2.f + 70.f));
-		restartButton.setFillColor(sf::Color(200, 200, 200));
-		restartButton.setOutlineColor(sf::Color::Black);
-		restartButton.setOutlineThickness(1.f);
-		window.draw(restartButton);
+		if (!isAnalyzing)
+		{
+			const float buttonWidth = 140.f;
+			const float buttonHeight = 35.f;
+			const float analyzeButtonX = (window.getSize().x - 320.f) / 2.f + 20.f;
+			const float analyzeButtonY = (window.getSize().y - 220.f) / 2.f + 150.f;
+			const float restartButtonX = (window.getSize().x - 320.f) / 2.f + 160.f;
+			const float restartButtonY = (window.getSize().y - 220.f) / 2.f + 150.f;
 
-		sf::Text restartText(font, "Restart");
-		restartText.setCharacterSize(16);
-		restartText.setPosition(sf::Vector2f(window.getSize().x / 2.f - 45.f, window.getSize().y / 2.f + 80.f));
-		restartText.setFillColor(sf::Color::Black);
-		window.draw(restartText);
+			sf::RectangleShape analyzeButton(sf::Vector2f(buttonWidth, buttonHeight));
+			analyzeButton.setPosition(sf::Vector2f(analyzeButtonX, analyzeButtonY));
+			analyzeButton.setFillColor(sf::Color(220, 220, 220));
+			analyzeButton.setOutlineColor(sf::Color::Black);
+			analyzeButton.setOutlineThickness(1.f);
+			window.draw(analyzeButton);
+
+			sf::Text analyzeText(font, "Analyze");
+			analyzeText.setCharacterSize(16);
+			analyzeText.setPosition(sf::Vector2f(analyzeButtonX + 38.f, analyzeButtonY + 8.f));
+			analyzeText.setFillColor(sf::Color::Black);
+			window.draw(analyzeText);
+
+			sf::RectangleShape restartButton(sf::Vector2f(buttonWidth, buttonHeight));
+			restartButton.setPosition(sf::Vector2f(restartButtonX, restartButtonY));
+			restartButton.setFillColor(sf::Color(220, 220, 220));
+			restartButton.setOutlineColor(sf::Color::Black);
+			restartButton.setOutlineThickness(1.f);
+			window.draw(restartButton);
+
+			sf::Text restartText(font, "Restart");
+			restartText.setCharacterSize(16);
+			restartText.setPosition(sf::Vector2f(restartButtonX + 42.f, restartButtonY + 8.f));
+			restartText.setFillColor(sf::Color::Black);
+			window.draw(restartText);
+		}
 	}
 
 	// Draw promotion piece selection menu if promotion is pending
