@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@
 /** Represents the current player. */
 enum class PlayerColor { None, White, Black };
 
-enum class GameResultType { None, Checkmate, Draw, Resignation };
+enum class GameResultType { None, Checkmate, Draw, Resignation, Timeout };
 
 struct GameResult {
     GameResultType type;
@@ -79,12 +80,24 @@ public:
     /** Set a piece at given coordinates (utility). */
     void setPiece(int x, int y, Piece piece);
 
+    /** Update the active player's clock based on elapsed real time. */
+    void updateClock();
+
+    /** Get the remaining time for a player in seconds. */
+    int getRemainingTimeSeconds(PlayerColor player) const;
+
+    /** Format the remaining time for a player as MM:SS. */
+    std::string getFormattedTime(PlayerColor player) const;
+
 private:
     Board board;
     PlayerColor currentPlayerColor;
     GameResult gameResult;
     std::vector<GameSnapshot> history;
     int historyIndex;
+    int whiteTimeSeconds;
+    int blackTimeSeconds;
+    std::chrono::steady_clock::time_point lastClockUpdate;
 
     void restoreStateAt(int index);
 };

@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include <sstream>
+
 // Constructor
 Game::Game()
 {
@@ -12,8 +14,11 @@ void Game::newGame()
 	board.reset();
 	currentPlayerColor = PlayerColor::White;
 	gameResult = { GameResultType::None, PieceColor::None, "" };
+	whiteTimeSeconds = 30;
+	blackTimeSeconds = 30;
 	history.clear();
 	historyIndex = -1;
+	lastClockUpdate = std::chrono::steady_clock::now();
 	saveCurrentState();
 }
 
@@ -64,7 +69,35 @@ void Game::changePlayerColor()
 	else
 		currentPlayerColor = PlayerColor::White;
 
+	lastClockUpdate = std::chrono::steady_clock::now();
 	return;
+}
+
+void Game::updateClock()
+{
+	if (gameResult.type != GameResultType::None)
+		return;
+
+	auto now = std::chrono::steady_clock::now();
+	const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(now - lastClockUpdate).count();
+	if (elapsedSeconds <= 0)
+		return;
+
+	if (currentPlayerColor == PlayerColor::White)
+		whiteTimeSeconds = std::max(0, whiteTimeSeconds - static_cast<int>(elapsedSeconds));
+	else if (currentPlayerColor == PlayerColor::Black)
+		blackTimeSeconds = std::max(0, blackTimeSeconds - static_cast<int>(elapsedSeconds));
+
+	lastClockUpdate = now;
+
+	if (whiteTimeSeconds == 0)
+	{
+		gameResult = { GameResultType::Timeout, PieceColor::Black, "Black wins by timeout" };
+	}
+	else if (blackTimeSeconds == 0)
+	{
+		gameResult = { GameResultType::Timeout, PieceColor::White, "White wins by timeout" };
+	}
 }
 
 void Game::updateGameState()
@@ -138,6 +171,28 @@ void Game::setPiece(int x, int y, Piece piece)
 	board.setPiece(x, y, piece);
 
 	return;
+}
+
+int Game::getRemainingTimeSeconds(PlayerColor player) const
+{
+	if (player == PlayerColor::White)
+		return whiteTimeSeconds;
+
+	if (player == PlayerColor::Black)
+		return blackTimeSeconds;
+
+	return 0;
+}
+
+std::string Game::getFormattedTime(PlayerColor player) const
+{
+	const int remainingSeconds = getRemainingTimeSeconds(player);
+	const int minutes = remainingSeconds / 60;
+	const int seconds = remainingSeconds % 60;
+
+	std::ostringstream stream;
+	stream << (minutes < 10 ? "0" : "") << minutes << ":" << (seconds < 10 ? "0" : "") << seconds;
+	return stream.str();
 }
 
 void Game::saveCurrentState()

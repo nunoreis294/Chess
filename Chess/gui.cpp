@@ -32,10 +32,12 @@ void Gui::run()
 	const Board* board = game.getBoard();
 
 	// Main loop
-    while (window.isOpen())
-    {
+	while (window.isOpen())
+	{
+		game.updateClock();
+
 		// Process events
-        while (const std::optional event = window.pollEvent())
+		while (const std::optional event = window.pollEvent())
         {
 			// Close window : exit
             if (event->is<sf::Event::Closed>())
@@ -48,6 +50,7 @@ void Gui::run()
 
 				if (game.isGameOver() && !isAnalyzing)
 				{
+					// Layout do pop-up de fim de jogo: centraliza o overlay e os botões de análise/reinício.
 					const sf::Vector2u size = window.getSize();
 					const float overlayWidth = 320.f;
 					const float overlayHeight = 220.f;
@@ -83,6 +86,7 @@ void Gui::run()
 
 				if (isAnalyzing)
 				{
+					// Layout do menu lateral em modo de análise: posição dos botões de navegação e reinício.
 					const float menuStartX = 600.f;
 					const float buttonWidth = 140.f;
 					const float buttonHeight = 35.f;
@@ -143,6 +147,7 @@ void Gui::run()
 				// Check if clicking on promotion piece selection (when promotion is pending)
 				if (isPromotionPending)
 				{
+					// Layout do pop-up de promoção: define o espaço e a posição dos botões de escolha da peça.
 					const float menuStartX = 600.f;
 					const float buttonWidth = 150.f;
 					const float buttonHeight = 50.f;
@@ -350,11 +355,11 @@ void Gui::run()
 // Draw the chess board (squares, letters, digits, possible moves and attacked squares)
 void Gui::drawBoard()
 {
-    const Board* board = game.getBoard();
+	const Board* board = game.getBoard();
 
-	// Use absolute size to ensure squares are always square
-	// 8 rows + 2 for borders
-    const float tileSize = window.getSize().y / 10;
+	// Layout do tabuleiro: usa uma grelha 10x10 para incluir as bordas laterais e os rótulos de coordenadas.
+	// O tamanho de cada casa é calculado a partir da altura da janela para manter o tabuleiro quadrado.
+	const float tileSize = window.getSize().y / 10;
 
 	// Determine if player is white or black to adjust board orientation
 	bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
@@ -368,10 +373,10 @@ void Gui::drawBoard()
 			// Calculate position based on square size
 			sf::Vector2f position(x * tileSize, y * tileSize);
 
-            // Draw squares
-            if (y == 0 || y == 9 || x == 0 || x == 9)
-            {
-				// Brown border squares
+			// Cores e textura das casas da borda do tabuleiro: o layout visual é definido aqui.
+			if (y == 0 || y == 9 || x == 0 || x == 9)
+			{
+				// Casas de borda em tom castanho, usadas para o contorno visual do tabuleiro.
                 if (y == x || (x == 0 && y == 9) || (x == 9 && y == 0))
                 {
                     boardSprite.setTexture(squareTextures["brown-corner"]);
@@ -392,9 +397,9 @@ void Gui::drawBoard()
                     }
                 }
             }            
-            else if ((x + y) % 2 == 0)
-            {
-				// White squares
+			else if ((x + y) % 2 == 0)
+			{
+				// Casas claras (brancas) do tabuleiro principal, com variações visuais para cantos e laterais.
                 if ((x == 1 && y == 1) || (x == 8 && y == 8))
                 {
                     boardSprite.setTexture(squareTextures["white-corner"]);
@@ -438,9 +443,9 @@ void Gui::drawBoard()
                     boardSprite.setScale(sf::Vector2f((tileSize / squareTextures["white"].getSize().x), (tileSize / squareTextures["white"].getSize().y)));
                 }
             }
-            else
-            {
-				// Black squares
+			else
+			{
+				// Casas escuras (pretas) do tabuleiro principal, com variações visuais para cantos e laterais.
                 if ((x == 1 && y == 8) || (x == 8 && y == 1))
                 {
                     boardSprite.setTexture(squareTextures["black-corner"]);
@@ -493,8 +498,8 @@ void Gui::drawBoard()
 			// Draw the square
             window.draw(boardSprite);
 
-			// Draw letters and digits on borders
-            const std::string letters[] = { "a", "b", "c", "d", "e", "f", "g", "h" };
+			// Layout dos rótulos das coordenadas: letras na base e números à esquerda, com orientação conforme a cor do jogador.
+			const std::string letters[] = { "a", "b", "c", "d", "e", "f", "g", "h" };
             const std::string digits[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
 
             sf::Sprite letterDigitSprite{ letterTextures["a"] };
@@ -573,8 +578,8 @@ void Gui::drawPieces()
 
     bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
 
-	// Draw pieces
-    for (int y = 0; y < 8; ++y)
+	// Layout das peças: a posição de desenho é ajustada conforme a orientação do jogador e a marcação de xeque usa uma cor/overlay visual.
+	for (int y = 0; y < 8; ++y)
     {
         for (int x = 0; x < 8; ++x)
         {
@@ -628,13 +633,14 @@ void Gui::drawMenu()
 	sf::Text text(font, "hello");
 	text.setCharacterSize(20);
 
-	// Draw menu background
+	// Layout e cor do menu lateral: fundo claro, borda escura e área reservada para os botões e histórico.
+	// Cor de fundo do painel lateral: cinza muito claro (RGB 240, 240, 240) para contrastar com o tabuleiro.
 	sf::RectangleShape menuBackground(sf::Vector2f(menuWidth, window.getSize().y));
 	menuBackground.setPosition(sf::Vector2f(menuStartX, 0.f));
 	menuBackground.setFillColor(sf::Color(240, 240, 240));
 	window.draw(menuBackground);
 
-	// Draw menu border
+	// Borda do menu lateral: preta, com espessura de 2 px para separar visualmente o painel do tabuleiro.
 	sf::RectangleShape menuBorder(sf::Vector2f(menuWidth, window.getSize().y));
 	menuBorder.setPosition(sf::Vector2f(menuStartX, 0.f));
 	menuBorder.setFillColor(sf::Color::Transparent);
@@ -642,12 +648,32 @@ void Gui::drawMenu()
 	menuBorder.setOutlineThickness(2.f);
 	window.draw(menuBorder);
 
-	// Draw title
+	// Título do menu: texto preto posicionado no canto superior esquerdo do painel lateral.
 	sf::Text titleText(font, "Moves");
-titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
-titleText.setFillColor(sf::Color::Black);
+	titleText.setPosition(sf::Vector2f(menuStartX + 10.f, 10.f));
+	titleText.setFillColor(sf::Color::Black);
 	window.draw(titleText);
 
+	// Cores dos relógios: azul para o turno ativo, cinza para o turno inativo e vermelho para tempo esgotado.
+	const sf::Color activeClockColor(0, 110, 200);
+	const sf::Color expiredClockColor(220, 0, 0);
+	const sf::Color inactiveClockColor(60, 60, 60);
+
+	// Relógio do jogador branco: texto posicionado logo abaixo do título, com 16 px de tamanho.
+	sf::Text whiteClockText(font, "White: " + game.getFormattedTime(PlayerColor::White));
+	whiteClockText.setCharacterSize(16);
+	whiteClockText.setPosition(sf::Vector2f(menuStartX + 10.f, 45.f));
+	whiteClockText.setFillColor(game.getRemainingTimeSeconds(PlayerColor::White) <= 0 ? expiredClockColor : (game.getCurrentPlayerColor() == PlayerColor::White && !game.isGameOver() ? activeClockColor : inactiveClockColor));
+	window.draw(whiteClockText);
+
+	// Relógio do jogador preto: texto posicionado logo abaixo do relógio branco, com o mesmo estilo visual.
+	sf::Text blackClockText(font, "Black: " + game.getFormattedTime(PlayerColor::Black));
+	blackClockText.setCharacterSize(16);
+	blackClockText.setPosition(sf::Vector2f(menuStartX + 10.f, 70.f));
+	blackClockText.setFillColor(game.getRemainingTimeSeconds(PlayerColor::Black) <= 0 ? expiredClockColor : (game.getCurrentPlayerColor() == PlayerColor::Black && !game.isGameOver() ? activeClockColor : inactiveClockColor));
+	window.draw(blackClockText);
+
+	// Layout e cor dos botões laterais: tamanho, posição e estilo visual são definidos aqui para facilitar futuras alterações.
 	const float sideButtonWidth = 140.f;
 	const float sideButtonHeight = 35.f;
 	const float resignButtonX = menuStartX + 20.f;
@@ -661,6 +687,7 @@ titleText.setFillColor(sf::Color::Black);
 
 	if (!isAnalyzing)
 	{
+		// Botão de resign: fundo cinza claro (220,220,220) com borda preta e texto preto para um contraste limpo.
 		sf::RectangleShape resignButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
 		resignButton.setPosition(sf::Vector2f(resignButtonX, resignButtonY));
 		resignButton.setFillColor(sf::Color(220, 220, 220));
@@ -668,6 +695,7 @@ titleText.setFillColor(sf::Color::Black);
 		resignButton.setOutlineThickness(1.f);
 		window.draw(resignButton);
 
+		// Texto do botão de resign: centralizado visualmente dentro do retângulo do botão.
 		sf::Text resignText(font, "Resign");
 		resignText.setCharacterSize(16);
 		resignText.setPosition(sf::Vector2f(resignButtonX + 42.f, resignButtonY + 8.f));
@@ -677,6 +705,7 @@ titleText.setFillColor(sf::Color::Black);
 
 	if (isAnalyzing || game.isGameOver())
 	{
+		// Botões de navegação e reinício: usam o mesmo esquema visual de cinza claro com borda preta.
 		sf::RectangleShape previousButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
 		previousButton.setPosition(sf::Vector2f(previousButtonX, previousButtonY));
 		previousButton.setFillColor(sf::Color(220, 220, 220));
@@ -684,6 +713,7 @@ titleText.setFillColor(sf::Color::Black);
 		previousButton.setOutlineThickness(1.f);
 		window.draw(previousButton);
 
+		// Texto do botão Previous alinhado ligeiramente à direita do centro do botão.
 		sf::Text previousText(font, "Previous");
 		previousText.setCharacterSize(16);
 		previousText.setPosition(sf::Vector2f(previousButtonX + 25.f, previousButtonY + 8.f));
@@ -697,6 +727,7 @@ titleText.setFillColor(sf::Color::Black);
 		nextButton.setOutlineThickness(1.f);
 		window.draw(nextButton);
 
+		// Texto do botão Next posicionado mais à direita para equilibrar o layout horizontal.
 		sf::Text nextText(font, "Next");
 		nextText.setCharacterSize(16);
 		nextText.setPosition(sf::Vector2f(nextButtonX + 45.f, nextButtonY + 8.f));
@@ -710,6 +741,7 @@ titleText.setFillColor(sf::Color::Black);
 		restartButton.setOutlineThickness(1.f);
 		window.draw(restartButton);
 
+		// Texto do botão Restart alinhado ao centro do botão, acima dos botões de navegação.
 		sf::Text restartText(font, "Restart");
 		restartText.setCharacterSize(16);
 		restartText.setPosition(sf::Vector2f(restartButtonX + 40.f, restartButtonY + 8.f));
@@ -737,10 +769,12 @@ titleText.setFillColor(sf::Color::Black);
 
 	if (!isAnalyzing && game.isGameOver())
 	{
+		// Pop-up de fim de jogo: overlay escurecido a 160 de alpha para destacar o painel central.
 		sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
 		overlay.setFillColor(sf::Color(0, 0, 0, 160));
 		window.draw(overlay);
 
+		// Caixa do pop-up central: 320x220 px, fundo branco e borda preta para destacar o conteúdo.
 		sf::RectangleShape dialogBackground(sf::Vector2f(320.f, 220.f));
 		dialogBackground.setPosition(sf::Vector2f((window.getSize().x - 320.f) / 2.f, (window.getSize().y - 220.f) / 2.f));
 		dialogBackground.setFillColor(sf::Color(255, 255, 255));
@@ -748,6 +782,7 @@ titleText.setFillColor(sf::Color::Black);
 		dialogBackground.setOutlineThickness(2.f);
 		window.draw(dialogBackground);
 
+		// Título do pop-up de fim de jogo: posicionamento centralizado na caixa de diálogo.
 		GameResult result = game.getGameResult();
 		std::string title = result.type == GameResultType::Checkmate ? "Checkmate" : result.type == GameResultType::Resignation ? "Resignation" : result.type == GameResultType::Draw ? "Draw" : "Analysis";
 		sf::Text resultTitle(font, title);
@@ -802,12 +837,14 @@ titleText.setFillColor(sf::Color::Black);
 	// Draw promotion piece selection menu if promotion is pending
 	if (isPromotionPending)
 	{
-		// Draw semi-transparent overlay
+		// Pop-up de promoção: overlay escurecido e painel central com os botões de escolha da peça.
+		// A cor e o posicionamento do painel podem ser alterados sem mexer na lógica do jogo.
+		// Overlay de fundo: preto semi-transparente com alpha 100 para escurecer o tabuleiro.
 		sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
 		overlay.setFillColor(sf::Color(0, 0, 0, 100));
 		window.draw(overlay);
 
-		// Draw promotion dialog background
+		// Caixa do pop-up de promoção: 250x300 px, branca e alinhada ao painel lateral para destacar as opções.
 		sf::RectangleShape dialogBackground(sf::Vector2f(250.f, 300.f));
 		dialogBackground.setPosition(sf::Vector2f(menuStartX + 25.f, 100.f));
 		dialogBackground.setFillColor(sf::Color(255, 255, 255));
