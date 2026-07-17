@@ -41,6 +41,9 @@ private:
 	// Analysis state after a finished game
 	bool isAnalyzing;
 
+	// Manual board orientation state
+	bool boardFlipped;
+
 	sf::Font font;
 
 	void drawBoard();

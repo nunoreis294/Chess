@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#include <algorithm>
+#include <iostream>
 #include "gui.h"
 #include "utils.h"
 
@@ -6,7 +7,8 @@
 Gui::Gui(Game& game)
 	: game(game), window(sf::VideoMode({ 900, 600 }), "Chess"), 
 	  isPromotionPending(false), promotionSquare(-1, -1),
-	  selectedSquare(-1, -1), selectedPiece(-1, -1), isAnalyzing(false)
+	  selectedSquare(-1, -1), selectedPiece(-1, -1), isAnalyzing(false),
+	  boardFlipped(false)
 {
 	Utils utils;
 
@@ -48,6 +50,19 @@ void Gui::run()
 				// Get mouse position
 				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
+				const float menuStartX = 600.f;
+				const float buttonWidth = 140.f;
+				const float buttonHeight = 35.f;
+				const float rotateButtonX = menuStartX + 20.f;
+				const float rotateButtonY = window.getSize().y - 240.f;
+
+				if (mousePos.x >= rotateButtonX && mousePos.x <= rotateButtonX + buttonWidth &&
+					mousePos.y >= rotateButtonY && mousePos.y <= rotateButtonY + buttonHeight)
+				{
+					boardFlipped = !boardFlipped;
+					continue;
+				}
+
 				if (game.isGameOver() && !isAnalyzing)
 				{
 					// Layout do pop-up de fim de jogo: centraliza o overlay e os botões de análise/reinício.
@@ -78,6 +93,7 @@ void Gui::run()
 						isPromotionPending = false;
 						promotionSquare = sf::Vector2i(-1, -1);
 						isAnalyzing = false;
+						boardFlipped = false;
 						continue;
 					}
 
@@ -118,6 +134,7 @@ void Gui::run()
 						isPromotionPending = false;
 						promotionSquare = sf::Vector2i(-1, -1);
 						isAnalyzing = false;
+						boardFlipped = false;
 						continue;
 					}
 
@@ -214,7 +231,7 @@ void Gui::run()
                 {
                     PlayerColor currentPlayerColor = game.getCurrentPlayerColor();
 
-                    if (currentPlayerColor == PlayerColor::Black)
+                    if (boardFlipped)
                     {
                         x = 9 - x;
                         y = 9 - y;
@@ -361,8 +378,8 @@ void Gui::drawBoard()
 	// O tamanho de cada casa é calculado a partir da altura da janela para manter o tabuleiro quadrado.
 	const float tileSize = window.getSize().y / 10;
 
-	// Determine if player is white or black to adjust board orientation
-	bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
+	// Determine if the board should be displayed from the white or black perspective
+	const bool playerWhiteColor = !boardFlipped;
 
     for (int y = 0; y < 10; ++y)
     {
@@ -538,11 +555,16 @@ void Gui::drawBoard()
     {
         // Draw possible squares (dot) and attacked squares (red boarder) based on selected piece
         std::vector<sf::Vector2i> possibleSquares = { board->getPossibleSquares(selectedPiece) };
+        std::vector<sf::Vector2i> attackedSquares = { board->getAttackedSquares(selectedPiece) };
 
         sf::Sprite utilSprite{ utilTextures["dot"] };
 
         for (sf::Vector2i possibleSquare : possibleSquares)
         {
+            const bool isAttackedSquare = std::find(attackedSquares.begin(), attackedSquares.end(), possibleSquare) != attackedSquares.end();
+            if (isAttackedSquare)
+                continue;
+
             if (playerWhiteColor)
                 utilSprite.setPosition(sf::Vector2f(tileSize * possibleSquare.x, tileSize * possibleSquare.y));
             else
@@ -551,8 +573,6 @@ void Gui::drawBoard()
             utilSprite.setScale(sf::Vector2f((tileSize / utilTextures["dot"].getSize().x), (tileSize / utilTextures["dot"].getSize().y)));
             window.draw(utilSprite);
         }
-
-        std::vector<sf::Vector2i> attackedSquares = { board->getAttackedSquares(selectedPiece) };
 
         utilSprite = sf::Sprite{ utilTextures["attacked"] };
 
@@ -576,7 +596,7 @@ void Gui::drawPieces()
 	// Use absolute size to ensure pieces are always square
     const float tileSize = window.getSize().y / 10;
 
-    bool playerWhiteColor = (PlayerColor::White == game.getCurrentPlayerColor()) ? true : false;
+    const bool playerWhiteColor = !boardFlipped;
 
 	// Layout das peças: a posição de desenho é ajustada conforme a orientação do jogador e a marcação de xeque usa uma cor/overlay visual.
 	for (int y = 0; y < 8; ++y)
@@ -676,6 +696,8 @@ void Gui::drawMenu()
 	// Layout e cor dos botões laterais: tamanho, posição e estilo visual são definidos aqui para facilitar futuras alterações.
 	const float sideButtonWidth = 140.f;
 	const float sideButtonHeight = 35.f;
+	const float rotateButtonX = menuStartX + 20.f;
+	const float rotateButtonY = window.getSize().y - 240.f;
 	const float resignButtonX = menuStartX + 20.f;
 	const float resignButtonY = window.getSize().y - 60.f;
 	const float previousButtonX = menuStartX + 20.f;
@@ -684,6 +706,21 @@ void Gui::drawMenu()
 	const float nextButtonY = window.getSize().y - 120.f;
 	const float restartButtonX = menuStartX + 20.f;
 	const float restartButtonY = window.getSize().y - 180.f;
+
+	// Botão de orientação do tabuleiro: alterna entre a visão normal e a visão invertida.
+	sf::RectangleShape rotateButton(sf::Vector2f(sideButtonWidth, sideButtonHeight));
+	rotateButton.setPosition(sf::Vector2f(rotateButtonX, rotateButtonY));
+	rotateButton.setFillColor(sf::Color(220, 220, 220));
+	rotateButton.setOutlineColor(sf::Color::Black);
+	rotateButton.setOutlineThickness(1.f);
+	window.draw(rotateButton);
+
+	const std::string rotateButtonLabel = boardFlipped ? "Revert" : "Rotate";
+	sf::Text rotateText(font, rotateButtonLabel);
+	rotateText.setCharacterSize(16);
+	rotateText.setPosition(sf::Vector2f(rotateButtonX + (rotateButtonLabel == "Revert" ? 38.f : 40.f), rotateButtonY + 8.f));
+	rotateText.setFillColor(sf::Color::Black);
+	window.draw(rotateText);
 
 	if (!isAnalyzing)
 	{
